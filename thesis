@@ -1,0 +1,1803 @@
+\documentclass[12pt]{ucbthesis}
+
+% --- Math and symbols ---
+\usepackage{amsmath,amssymb}
+\usepackage{physics}
+\usepackage{siunitx}
+\usepackage{braket}
+\usepackage{bm}
+\usepackage{mathtools}
+
+% --- Figure and caption formatting ---
+\usepackage{caption}
+\usepackage{subcaption}  % Load AFTER caption
+\usepackage{adjustbox}
+
+% Optional: Caption formatting tweak
+\captionsetup[figure]{labelfont=bf}
+
+
+% --- Tables and colors ---
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{xcolor}
+\definecolor{tablegray}{gray}{0.95}
+
+\usepackage{array} 
+% Only color tables, not matrices!
+\usepackage{etoolbox}
+\AtBeginEnvironment{tabular}{\rowcolors{2}{tablegray}{white}}
+\AtBeginEnvironment{longtable}{\rowcolors{2}{tablegray}{white}}
+
+% --- Graphics and floats ---
+\usepackage{graphicx}
+\usepackage[float]{placeins}
+
+% --- Hyperlinks and citations ---
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue]{hyperref}
+\usepackage{cite}
+
+% --- Lists and spacing ---
+\usepackage{enumitem}
+\usepackage{setspace}
+\setlist{nosep}
+
+% --- TikZ for figures ---
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+% --- Geometry and layout ---
+\usepackage{geometry}
+\setlength{\headheight}{30pt} % Fix header height warning
+\addtolength{\abovecaptionskip}{\baselineskip}
+
+% --- Theorem and definition environments ---
+\usepackage{amsthm}
+% Custom definition environment: unboxed, bold label, period, end marker
+\newtheoremstyle{mydef}
+  {6pt}   % Space above
+  {6pt}   % Space below
+  {\normalfont} % Body font
+  {}      % Indent
+  {\bfseries} % Theorem head font
+  {.}     % Punctuation after theorem head
+  {0.5em} % Space after theorem head
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ (\textit{#3})}} % Theorem head spec
+
+\theoremstyle{mydef}
+\newtheorem{definition}{Definition}[chapter]
+
+% Optional: add end marker to definitions (like a black square)
+\let\olddefinition\definition
+\let\endolddefinition\enddefinition
+\renewenvironment{definition}[1][]{%
+  \begin{olddefinition}[#1]%
+}{%
+  \hfill$\blacksquare$\end{olddefinition}%
+}
+
+% --- Other theorem environments ---
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\begin{document}
+% Title Page Information
+\title{Strain-Induced Flat Bands and Lateral Heterostructures: \ Hole Localization in Rippled Monolayer TMDs}
+\author{Meshal Alawein}
+\degreesemester{Spring}
+\degreeyear{2025}
+\degree{Doctor of Philosophy}
+\chair{Professor Ali Javey}
+\othermembers{Professor Daryl Chrzan \\
+Professor Boubacar Kant\'e}
+\numberofmembers{3}
+\field{Electrical Engineering and Computer Sciences}
+% Front Matter
+\maketitle
+\approvalpage
+\copyrightpage
+\chapter*{Abstract}
+What happens when you squeeze a 2D semiconductor beyond its comfort zone? In this thesis, we demonstrate that mechanical rippling induced by controlled compression can carve out flat valence bands in 2D group-VI TMD monolayers (MoS\textsubscript{2}, WS\textsubscript{2}, MoSe\textsubscript{2}, and WSe\textsubscript{2}), transforming them into self-assembled lateral heterostructures with nothing more than a simple squeeze.
+
+With first-principles calculations in hand, we follow the cascade that links mechanical rippling to electronic flat bands. Under compression, the monolayer's buckling instabilities spawn ripples that rewire the band structure, shifting $E_{\mathrm{K}}$ downward and $E_\Gamma$ upward (the latter sitting between a nearly flat segment along $\overline{\Gamma\mathrm{X}}$ and the perfectly flat line $\overline{\Gamma\mathrm{Y}}$). As the ripple amplitude grows further, a critical point is reached where $E_{\mathrm{\Gamma}}$ overtakes $E_\mathrm{K}$ and the valence‐band maximum relocates to $\Gamma$'s flat land, making the gap indirect and signaling the birth of massive holes and a new electronic identity.
+
+This mechanical squeezing accomplishes what typically requires elaborate stacking procedures or precise twist-angle. The periodic ripples effectively carve a built-in lateral heterostructure within a single, chemically homogeneous sheet. The curvature-driven transformation creates a striking electronic asymmetry: holes become pinned in high-curvature regions with dramatically high effective mass in both directions (though much larger along $y$), while electrons remain free to roam---a quantum-mechanical sorting that emerges purely from geometry. This ripple-induced carrier segregation opens new possibilities for exciton trapping, hole-based electronics, and the study of correlated electronic phases in 2D systems.
+
+\begin{frontmatter}
+\begin{dedication}
+\null\vfil
+\begin{center}
+In memory of Sulaiman Almajed,\\[1em]
+heaven called for reinforcement, and now you guide from among the stars.\\[3em]
+
+To Jessica,\\[1em]
+whose compassion and unwavering support carried me through.\\[3em]
+
+To my family,\\[1em]
+my everlasting foundation and fountain of love.
+\end{center}
+\vfil\null
+\end{dedication}
+\tableofcontents
+\clearpage
+\listoffigures
+\clearpage
+\listoftables
+\begin{acknowledgements}
+
+First and foremost, I extend my deepest gratitude to my research advisor, Professor Daryl Chrzan, who took me under his wing and guided me through every twist and turn of this project. Amid wild pivots, chaotic drafts, and countless ``I swear I'm almost done'' declarations that I care to admit, he maintained remarkable clarity---and, against all odds, his sanity---throughout the carnival ride that is advising a PhD student. His day-to-day mentorship and sharp, no-nonsense insight helped shape not just the scientific direction of this work, but also the way I think as a researcher. Over the years, I tested the limits of both our research tools and his patience, throwing at him a full buffet of challenges and academic misadventures---occasional detours, procrastination marathons, half-baked ideas, codes that left the compiler speechless, and the kind of nonlinear progress only a PhD student can deliver.\ He endured it all and remained calm, humorous, and far more tolerant than I had any right to expect. For that---and for not abandoning me at sea after catching no fish---I am profoundly thankful.
+
+I am equally grateful to my advisor to my PhD advisor, Professor Ali Javey, for his unwavering support throughout my time in the program and for letting me run with this idea as well as entrusting me with the freedom and flexibility to pursue this research direction. His strategic oversight and guidance helped make this work possible. My sincere thanks also go to Professor Boubacar Kant\'e for serving on my dissertation committee and for offering valuable feedback that helped strengthen this work.  I also wish to acknowledge Dr.\ Joel Ager for his collaborative spirit and contributions as a co-author, and to the broader team at Lawrence Berkeley National Laboratory for making this work possible.
+
+This work was generously supported by the U.S. Department of Energy, Office of Science, Office of Basic Energy Sciences.
+
+\end{acknowledgements}
+\end{frontmatter}
+% Main Chapters
+\pagestyle{headings}
+
+
+
+\chapter{Strain-Tunable 2D Systems: Fundamentals and Background}
+\label{chapter:1}
+
+\section{2D Materials: History and Promise}
+\label{section:1.1}
+
+\subsection{The Mermin--Wagner Ultimatum}
+\label{subsection:1.1.1}
+
+The story of 2D materials often starts in the same way good science usually does: with a hunch, some equations, and a whole lot of skepticism. Long before anyone actually peeled a monolayer off anything, theorists were already speculating about the exotic physics that might emerge from slicing layered crystals down to a single atomic sheet. As early as 1947, Wallace calculated the band structure of a single graphene layer and predicted its unusual semi-metallic behavior~\cite{wallace_band_1947, geim_graphene_2012}. His calculations revealed points in the Brillouin zone where the conduction and valence bands meet linearly---features we now recognize as the characteristic ``Dirac cones'' of graphene. By the 1960s, studies of graphite intercalation compounds~\cite{fischer_graphite_1978} were uncovering more hints that something interesting was happening between the layers.
+
+But before anyone could start stacking Nobel Prizes, the growing excitement ran headlong into a theoretical wall:
+
+\begin{theorem}[Mermin--Wagner Theorem]
+For dimensions $d \leq 2$, a system with a continuous symmetry group $G$ and interactions decaying faster than $r^{-{(d+2)}}$ cannot spontaneously break $G$ at any finite temperature $T > 0$.
+\end{theorem}
+
+Translation? Atoms in a 2D sheet should jiggle themselves into oblivion at any nonzero temperature. Long-range order? Not a chance. Many physicists simply shrugged and moved on. After all, who wants to build something that's supposed to curl, ripple, or disintegrate?
+
+Still, nature had other plans---and a quiet trick up its sleeve. It turns out that if a 2D sheet is allowed to ripple ever so slightly, it can outsmart the very theorem that tried to outlaw its existence.\footnote{Atomic-scale ripples in graphene have been experimentally confirmed~\cite{fasolino_intrinsic_2007}, and far from compromising the structure, they confer additional stability through renormalized bending rigidity.} These spontaneous undulations aren’t just aesthetic quirks---they serve a mechanical purpose.
+
+Here’s how the loophole works. In the simplest models, out-of-plane (flexural) modes soften dangerously at long wavelengths, scaling as $\omega(\mathbf{q}) \sim |\mathbf{q}|^2$. Left unchecked, this would cause the entire lattice to wobble uncontrollably, with divergent atomic displacements. But in reality, the lattice fights back. Nature couples these flexural motions to in-plane stretching modes---an anharmonic interaction that fundamentally alters the game.
+
+The result is a stiffening effect: the vibrational spectrum gets modified to
+\begin{equation}
+\omega(\mathbf{q}) = \sqrt{\frac{\kappa |\mathbf{q}|^4 + 2(\lambda + \mu)\bar{u} |\mathbf{q}|^2}{\rho}} \approx \alpha |\mathbf{q}|^2 + \beta |\mathbf{q}|^4,
+\end{equation}
+where $\kappa$ is the bending rigidity, $\lambda$ and $\mu$ are Lamé constants describing in-plane elasticity, and $\rho$ is the mass density~\cite{de_andres_bending_2012}. In essence, these ripples don’t weaken the sheet---they stabilize it, acting as built-in shock absorbers that tame long-wavelength instabilities.
+
+So, in an ironic twist, the very undulations that once threatened the stability of 2D materials turn out to be their saviors. A little bending, strategically distributed, sidesteps the Mermin--Wagner constraint with surprising elegance. Still, theoretical optimism was one thing---experimental realization was another. For decades, 2D crystals remained the unicorns of solid-state physics: imagined, debated, but never observed. Until someone finally decided to try Scotch tape.
+
+
+\subsection{Graphene: The First 2D Crystal}
+\label{subsection:1.1.2}
+
+In 2004~\cite{novoselov_electric_2004}, Andre Geim and Konstantin Novoselov---armed with nothing more than curiosity, graphite, and Scotch tape---peeled off the world's first monolayer of graphene in what they later called a ``Friday afternoon experiment'' (see Figure~\ref{fig:graphene-peel}). It was a stunt so simple it seemed absurd---yet it overturned decades of theoretical doubt and cracked open the door to a new dimension of materials science. What they uncovered wasn't just thin---it was extraordinary: a carbon sheet just one atom thick, where electrons behaved like massless particles, traveled microns without scattering, and resisted tearing with a tensile strength on par with steel. That deceptively simple Scotch-tape stunt would go on to win the 2010 Nobel Prize in Physics---and gift condensed matter physicists a new quantum playground.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{Figures/Schematics/graphene-peel.pdf}
+    \caption[Graphene exfoliation method]{\textbf{Graphene exfoliation method.} How to make history with office supplies: Mechanical exfoliation of graphene via adhesive tape. Left: Tape presses onto bulk graphite. Right: Layers peel off---sometimes down to a single sheet.}
+    \label{fig:graphene-peel}
+\end{figure}
+
+
+
+\subsection{The Gapless Dilemma}
+\label{subsection:1.1.3}
+
+So why is graphene so special? The answer lies in symmetry---perfect, elegant, and profoundly powerful. Its honeycomb lattice gives each carbon atom a twin with identical surroundings, perfectly balanced in every direction. This symmetry protects the infamous Dirac cones: linear band crossings where conduction and valence bands touch but never blend. At first glance, it seemed like the dream material for electronics---fast, strong, flexible, and quantum to its core. But there was a catch: it lacks a band gap. And no band gap means no switch. For digital logic, that’s a dealbreaker.\ Without a gap, graphene can’t reliably distinguish between ``on'' and ``off'' states---its conduction is always on.\footnote{That’s like building a circuit with a light that never goes out.}  This property isn’t a flaw in the material---it’s a consequence of its perfect symmetry. This symmetry enforces the degeneracy at the Dirac points, fixing them at $\mathrm{K}$ and $\mathrm{K}'$ and preventing the opening of a band gap.\footnote{A reduction in symmetry---from C$_{6v}$ to C$_{3v}$---can lift the protection of the Dirac points and open a band gap~\cite{ponomarenko_tunable_2011}.}
+
+
+So the strategies began to roll in. If nature wouldn’t give graphene a gap, perhaps we could force one into existence. One idea was to place graphene on a substrate---like SiC or hBN---in the hope that the interaction would break its symmetry just enough to open a gap~\cite{zhou_substrate-induced_2007, giovannetti_substrate-induced_2007}. Another approach involved chemical ``graffiti'': decorating the lattice with hydrogen, fluorine, or methyl groups. This created tunable gaps, but at the expense of graphene’s pristine structure~\cite{elias_control_2009, nair_fluorographene:_2010}. Researchers also tried slicing graphene into narrow nanoribbons, using lateral confinement to induce a gap---but this method proved highly sensitive to ribbon width and edge geometry~\cite{han_energy_2007, li_chemically_2008}.
+
+A more controllable strategy emerged with bilayer stacking: stack two graphene sheets, apply a vertical electric field, and---almost magically---a tunable gap appears~\cite{zhang_direct_2009, ohta_controlling_2006}. Elegant, yes, but not without added complexity. Then came the more exotic solutions: strain engineering and moir'e superlattices, where twisting or stretching the lattice could coax the bands into opening a gap~\cite{pereira_tight-binding_2009, guinea_energy_2010}.
+
+The trouble is, each of these methods comes at a cost---introducing defects, reducing mobility, or demanding fabrication gymnastics. Every gain feels like a trade-off. These trade-offs clarify why graphene, despite its remarkable electronic properties, remains difficult to integrate effectively into conventional semiconductor technologies.
+
+\subsection{Beyond Graphene}
+\label{subsection:1.1.4}
+
+Graphene's gap problem may have frustrated engineers, but it ignited the imagination of physicists. Suddenly, the periodic table looked like a catalog of layered crystals---each one a potential monolayer, just waiting to be peeled and explored~\cite{ajayan_two-dimensional_2016}. What followed was an explosion of atomically thin discoveries: silicene, phosphorene, hBN, black phosphorus, and the real breakout stars---transition metal dichalcogenides (TMDs)~\cite{jariwala_emerging_2014}.
+
+TMDs quickly became the rockstars of the post-graphene era---naturally semiconducting, mechanically flexible, and photonic to their core. The recipe is simple: take a transition metal (like Mo or W), sandwich it between two chalcogens (like S or Se), and voilà---MX$_2$, a three-atom-thick quantum sandwich~\cite{jariwala_emerging_2014, wang_electronics_2012}. Unlike graphene, these materials break inversion symmetry and exhibit strong spin--orbit coupling---offering not just charge carriers, but also spin and valley degrees of freedom to manipulate~\cite{mak_photonics_2016, xu_spin_2014}. 
+
+Group-VI TMDs---MoS$_2$, WS$_2$, MoSe$_2$, WSe$2$---come with a remarkable feature: when thinned down to a monolayer, their indirect band gaps transform into direct ones, right in the visible range~\cite{mak_atomically_2010, kam_detailed_1982}.\footnote{For $N{\text{layers}} \ge 2$, TMDs undergo a transition from a direct to an indirect band gap due to interlayer coupling, which shifts the valence band maximum from the $\mathrm{K}$ point to $\Gamma$, and the conduction band minimum from $\mathrm{K}$ to $\mathrm{Q}$. This transition results in a significant reduction in photoluminescence intensity in multilayer samples, as shown in several studies~\cite{splendiani_emerging_2010, zhao_evolution_2013, wang_electronics_2012}.} That direct gap makes them natural-born optoelectronic materials---perfect for light emission, absorption, and everything in between~\cite{wang_electronics_2012, lopez-sanchez_ultrasensitive_2013}.
+
+At the forefront of TMDs is MoS$_2$, celebrated for its exceptional structural and electronic versatility. In its bulk form, MoS$_2$ serves multiple roles: as a solid lubricant with a low friction coefficient ($\mu_s \sim 10^{-2}$), a photodetector material, and an efficient catalyst for hydrodesulfurization~\cite{raybaud_structural_1998, martin_superlubricity_2007}. It also features a large Seebeck coefficient~\cite{buscema_large_2013}, making it a promising candidate for thermoelectric applications.
+
+But what makes MoS$_2$ especially compelling is how its electronic band structure evolves with thickness. In bulk, it exhibits an indirect band gap of 1.2~eV~\cite{kam_detailed_1982}, but when thinned down to a monolayer, that gap becomes direct at 1.8~eV~\cite{mak_atomically_2010}. This transition dramatically enhances photoluminescence and enables fine-tuned control over optoelectronic properties, including efficient light emission and digital on/off switching~\cite{radisavljevic_single-layer_2011, cao_valley-selective_2012, zeng_valley_2012,_
+
+While graphene demonstrated the structural stability of two-dimensional crystals, TMDs revealed their functional potential---offering semiconducting behavior, optical activity, and electronic tunability. Their reduced dimensionality and broken symmetries give rise to quantum phenomena absent in bulk systems. Notable examples include unconventional superconductivity and superfluidity~\cite{cao_unconventional_2018, xi_ising_2016, wang_evidence_2019, lu_evidence_2015}, a variety of Hall effects~\cite{gusynin_unconventional_2005, novoselov_two-dimensional_2005, qian_quantum_2014, ma_observation_2019, kang_nonlinear_2019, deng_quantum_2020, mciver_light-induced_2020}, valley pseudospin physics~\cite{wu_electrical_2013, mak_valley_2014, cheng_valley_2014, macneill_breaking_2015, aivazian_magnetic_2015, schaibley_valleytronics_2016, singh_route_2017, zhong_van_2017, mak_lightvalley_2018, langer_lightwave_2018, xu_large_2018, zhang_abundant_2020, hu_manipulation_2020}, and nonlinear optical effects~\cite{seyler_electrical_2015, autere_nonlinear_2018, sun_giant_2019, xu_spontaneous_2020, huang_tuning_2020}.
+
+The remarkable diversity of 2D materials beyond graphene has opened new directions in condensed matter physics and materials science, with each material family offering distinct advantages for specific applications. This landscape continues to evolve rapidly, driven by ongoing discoveries of new materials, heterostructures, and emergent phenomena~\cite{novoselov_roadmap_2012, liu_van_2016}.
+
+
+\begin{table}[h!]
+\centering
+\caption[Representative 2D Materials and Band Gaps]{\textbf{Representative 2D Materials and Band Gaps.} Classification and band gap properties of monolayer 2D materials beyond graphene. Values compiled from comprehensive reviews~\cite{butler_progress_2013, bhimanapati_recent_2015, chhowalla_chemistry_2013, wang_electronics_2012}.}
+\label{tab:2d_materials}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{>{\centering\arraybackslash\bfseries}m{0.35\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}>{\centering\arraybackslash}p{0.15\textwidth}>{\centering\arraybackslash}p{0.15\textwidth}}
+\toprule
+\multicolumn{1}{c}{\textbf{Category}} & \multicolumn{1}{c}{\textbf{Material}} & \multicolumn{1}{c}{\textbf{Band Gap (eV)}} & \multicolumn{1}{c}{\textbf{Nature}} \\
+\midrule
+Group-VI TMDs & MoS\textsubscript{2} (1H) & 1.9 & Direct \\
+ & MoSe\textsubscript{2} (1H) & 1.6 & Direct \\
+ & MoTe\textsubscript{2} (1H) & 1.1 & Direct \\
+ & WS\textsubscript{2} (1H) & 2.0 & Direct \\
+ & WSe\textsubscript{2} (1H) & 1.7 & Direct \\
+\midrule
+Group-IVB TMDs & ZrS\textsubscript{2} (1T) & 1.7 & Indirect \\
+ & HfS\textsubscript{2} (1T) & 1.4 & Indirect \\
+\midrule
+Group IIIA TMDs & InSe & 1.25 & Direct \\
+ & GaSe & 2.1 & Indirect \\
+\midrule
+Insulators & h-BN & 6.0 & Direct \\
+ & MoO\textsubscript{3} & 3.0 & Indirect \\
+\midrule
+Semimetals/Metals & TaS\textsubscript{2} (1T) & 0 & Metallic \\
+ & NbSe\textsubscript{2} (1H) & 0 & Metallic \\
+\midrule
+Topological Insulators & Bi\textsubscript{2}Se\textsubscript{3} & 0.3 & TI \\
+ & Bi\textsubscript{2}Te\textsubscript{3} & 0.15 & TI \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Synthesis of 2D Materials}
+\label{subsection:1.2.1}
+
+
+If graphene opened the door, it was the flood of other 2D materials that marched through---and kept coming. Some were pursued for their exotic physics; others were recruited to fix what graphene couldn’t: a reliable, tunable band gap. This rapid expansion has been driven by a growing set of fabrication techniques, each with its own strengths and quirks. Figure~\ref{fig:synthesis} sketches the landscape---but let’s unpack it.
+
+The first strategy is refreshingly direct. So-called \textit{top-down} methods extract layers from bulk crystals by overcoming the weak vdW forces holding them together. Mechanical exfoliation---the infamous Scotch tape method---is the pioneer here~\cite{novoselov_electric_2004}, but liquid-phase exfoliation~\cite{hernandez_high-yield_2008} has made the process more scalable, if not quite as clean.
+
+On the flip side, \textit{bottom-up} techniques build materials atom-by-atom or molecule-by-molecule. These include chemical vapor deposition (CVD)~\cite{zhou_library_2018, tang_continuous_2017}, molecular beam epitaxy~\cite{zhuang_cooperative_2017}, and wet-chemical methods. Think of it as nanoscopic masonry: stack each atom in place, and grow your 2D crystal from scratch.
+
+Together, these two approaches---peeling and building---have made 2D material synthesis both a science and an art. Top-down methods yield pristine flakes with minimal defects, ideal for fundamental studies. Bottom-up approaches, by contrast, promise wafer-scale coverage and industrial relevance---if one can tame their defect densities and substrate dependencies.
+
+But what makes these materials truly exciting is their thinness. At just a few atoms thick, they offer near-ideal electrostatic control, with minimal gate leakage and strong resistance to short-channel effects---key features for next-generation transistors~\cite{geim_van_2013, ajayan_two-dimensional_2016}.
+
+Even more powerful is their flexibility. These synthesis methods enable stacking, straining, twisting, and patterning---paving the way for engineered vdW heterostructures with emergent properties. These aren’t just materials---they’re building blocks for quantum Lego.
+
+\begin{table}[h!]
+\centering
+\caption[Comparison of 2D Synthesis Methods]{\textbf{Comparison of 2D Synthesis Methods.} Advantages and limitations of top-down and bottom-up approaches for 2D material growth. Each route offers trade-offs between quality and scalability~\cite{novoselov_electric_2004, liu_exfoliation_2019, hu_two-dimensional_2018, zhou_library_2018}.}
+\label{tab:synthesis_comparison}
+\begin{tabular}{>{\centering\arraybackslash}m{0.23\textwidth} >{\raggedright\arraybackslash}m{0.37\textwidth} >{\raggedright\arraybackslash}m{0.37\textwidth}}
+\toprule
+\textbf{Approach} & \textbf{Advantages} & \textbf{Limitations} \\
+\midrule
+\textbf{Top-down} & Simple tools; excellent crystal quality; low defect density; retains intrinsic properties~\cite{novoselov_electric_2004} & Low yield; limited flake size; variable thickness; poor scalability~\cite{liu_exfoliation_2019} \\
+\rowcolor[gray]{0.95}
+\textbf{Bottom-up} & Wafer-scale growth; layer control; substrate integration; scalable fabrication~\cite{zhou_library_2018} & Higher defect density; sensitive to conditions; quality depends on substrate~\cite{hu_two-dimensional_2018} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\textwidth]{Figures/Schematics/synthesis.pdf}
+    \caption[Top-down and Bottom-up Synthesis of 2D Materials]{\textbf{Top-down and Bottom-up Synthesis of 2D Materials.} \textbf{Left:} Exfoliation techniques (mechanical or chemical) lift monolayers from bulk. \textbf{Right:} Bottom-up growth (e.g., CVD, MBE) assembles 2D crystals atom-by-atom. Together, these methods underpin modern 2D material fabrication.}
+    \label{fig:synthesis}
+\end{figure}
+
+
+\subsection{Strain Engineering in TMDs}
+\label{subsection:1.2.2}
+
+What makes 2D materials truly captivating isn’t just their quantum weirdness or visual elegance---it’s their flexibility. Literally. Monolayer TMDs can withstand strains exceeding 10\% without tearing~\cite{bertolazzi_stretching_2011, castellanosgomez_elastic_2012, cooper_nonlinear_2013}. This extraordinary mechanical resilience unlocks a playground for \emph{strain engineering}---the art of tuning electronic properties through carefully applied tension or compression~\cite{dai_strain_2019, qi_recent_2023}. 
+
+This has inspired a range of experimental strategies to impose strain with varying control over magnitude, uniformity, and localization---summarized in Table~\ref{tab:strain_techniques} and illustrated in Figure~\ref{fig:strain_methods}. These approaches reveal a unique advantage of 2D materials: they can maintain uniform, coherent strain across large areas---unlike their bulk counterparts, which tend to crack, shear, or form dislocations. Their atomic thinness and strong in-plane bonds mean they deform as one continuous canvas. And it’s not just about mechanics: strain profoundly alters the electronic landscape. In MoS\textsubscript{2}, for instance, strain can shift the bandgap by about 100 {meV} per 1\% strain~\cite{trainer_effects_2019}. Stretching, compressing, or wrinkling isn’t just physical---it’s a tool for electronic sculpting. That’s the promise of strain engineering: bending matter to bend bands.
+
+\begin{table}[h!]
+\centering
+\caption[Strain Techniques in TMDs]{\textbf{Strain Techniques in TMDs.} Summary of methods used to apply controlled strain in monolayer TMDs, each with distinct mechanisms and outcomes.}
+\label{tab:strain_techniques}
+\begin{tabular}{>{\centering\arraybackslash}m{0.25\textwidth} >{\raggedright\arraybackslash}m{0.65\textwidth}}
+\toprule
+\textbf{Technique} & \textbf{Description} \\
+\midrule
+\textbf{Substrate bending} & Curving a flexible substrate transmits strain to the overlying monolayer~\cite{conley_bandgap_2013}. \\
+\rowcolor[gray]{0.95}
+\textbf{Heterostructure lattice mismatch} & Stacking dissimilar 2D crystals induces strain due to lattice constant mismatches~\cite{li_molecular_2019}. \\
+\textbf{AFM-tip indentation} & A nanoscale tip deforms the monolayer locally, introducing strong but localized strain~\cite{trainer_effects_2019}. \\
+\rowcolor[gray]{0.95}
+\textbf{Thermal mismatch} & Unequal thermal expansion between film and substrate induces strain during annealing~\cite{li_buckling_2021, han_buckling_2021}. \\
+\textbf{Prestretched substrates} & Films deposited on prestretched elastomers ripple upon relaxation, inducing periodic strain~\cite{castellanosgomez_elastic_2012, vella_macroscopic_2009}. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=\textwidth]{Figures/Schematics/TMD-strain.pdf}
+  \caption[Strain-Engineering Methods in TMD Monolayers]{\textbf{Strain-Engineering Methods in TMD Monolayers.} \textbf{Top row:} (1) Substrate bending generates compressive/tensile zones, (2) lattice mismatch in heterostructures induces local strain, (3) localized strain via AFM indentation. \textbf{Bottom row:} (4) Thermal expansion mismatch, (5) prestretched substrate relaxation, (6) wrinkling on soft substrates, (7) global buckling from stiff substrate compression. Our focus lies on methods (4)-(6), where we end up with uniform periodic ripples.}
+  \label{fig:strain_methods}
+\end{figure}
+\newpage 
+\subsubsection{Controlled vs. Spontaneous Deformations}
+\label{subsection:1.2.2.1}
+
+Not all ripples are created equal. Some appear as artifacts---accidental wrinkles formed when a film is transferred onto a new substrate. Others are engineered with surgical precision. Understanding the difference is key to transforming what used to be noise into a tunable feature.
+
+During fabrication, spontaneous ripples often arise from trapped solvents, thermal gradients, or imperfect adhesion~\cite{kim_wettingassisted_2016, liu_modified_2020, shen_rational_2021, hwang_facile_2022}. These uncontrolled features can degrade device performance by scattering carriers and introducing disorder~\cite{lee_mobility_2011, liang_toward_2011, zhu_structure_2012, wang_surface_2013}.
+
+But with proper design, the same physical instabilities can be harnessed. Instead of fighting ripples, we can choreograph them. Controlled wrinkling lets us inscribe patterns of strain into the crystal lattice itself, reshaping how electrons move without adding a single atom.\footnote{This small act of deformation will take on a larger role later---complete with a name and its own chapter.}
+
+
+\subsubsection{Mechanical Engineering of Electronic Properties}
+\label{subsection:1.2.2.2}
+
+When a TMD buckles, it doesn’t just change shape—it transforms its electronic character. Flexural deformation modifies local curvature, inducing piezoelectric and flexoelectric responses~\cite{shi_flexoelectricity_2018}, shifting band edges~\cite{qi_bandgap_2013}, and even facilitating dark exciton formation~\cite{lee_strain-induced_2023}. Mechanical shape becomes quantum function.
+
+This idea has surprisingly deep roots. In 1909, Stoney showed that stressed films could bend a substrate~\cite{noauthor_tension_1909}—a concept later exploited to enhance transistor mobility in strained silicon~\cite{ghani_90nm_2003, mistry_delaying_2004, thompson_logic_2004}. More recently, researchers discovered that depositing 2D films onto pre-stretched elastomers leads to ripple formation upon release~\cite{castellanos-gomez_local_2013, vella_macroscopic_2009}. What began as an unwanted side effect became a design opportunity.
+
+This evolving strain--structure--function relationship is inseparable from synthesis. High-quality monolayers are a prerequisite for generating uniform, well-controlled ripples. But the paradigm has shifted: strain is no longer a nuisance to suppress—it’s a design variable. A tunable parameter. A new axis in the phase space of quantum materials.
+
+
+\section{Flat Bands: When Electrons Forget How to Move}
+\label{section:1.3}
+
+In most crystals, electrons behave like waves—free to roam, spread, and interfere as they travel through the periodic lattice. But under the right conditions, something unexpected happens: the band structure flattens. The electron’s group velocity drops to nearly zero, and its wavefunction stops spreading. The result? A flat band—where electrons all but forget how to move.
+
+That might sound like a bad thing. Isn’t mobility what makes electronics work? But here’s the twist: when motion stops, interactions step in. With kinetic energy out of the way, even faint repulsions or attractions between electrons can reshape the ground state. Correlation becomes king.
+
+Superconductivity, magnetism, and other collective phases don’t emerge despite the flatness—they emerge because of it. It’s precisely when electrons stop flying past each other that they start to notice each other—and act together.
+
+This idea is no longer just theoretical. In twisted bilayer graphene (TBG) near the so-called ``magic angle,'' flat bands have driven a surge of discoveries—unconventional superconductivity, Mott-like insulating behavior, and a zoo of correlated phenomena~\cite{bistritzer_moire_2011,po_origin_2018,cao_unconventional_2018,isobe_unconventional_2018,wu_theory_2018}. What began as a moiré curiosity has quickly become a cornerstone of modern condensed matter physics~\cite{lian_twisted_2019,chou_superconductor_2019}, with experimental confirmation rolling in across multiple platforms~\cite{codecido_correlated_2019,yankowitz_tuning_2019,saito_independent_2020,shavit_theory_2021,oh_evidence_2021}.
+
+And the physics doesn’t stop at superconductivity. Flat bands have also been linked to emergent magnetism~\cite{gonzalez-arraga_electrically_2017,sboychakov_externally_2018,sharpe_emergent_2019,wolf_electrically_2019,li_experimental_2020,pons_flat-band_2020,klebl_importance_2021,vahedi_magnetism_2021}, strange transport regimes~\cite{polshyn_large_2019,wu_phonon-induced_2019,cao_strange_2020}, and even quantum anomalous Hall effects~\cite{serlin_intrinsic_2020,bultinck_mechanism_2020,liu_theories_2021}. Entire phase diagrams have been redrawn to accommodate correlated insulators~\cite{cao_correlated_2018,yuan_erratum:_2018,padhi_doped_2018,ochi_possible_2018,zhang_correlated_2020,nuckolls_strongly_2020,da_liao_correlation-induced_2021,liu_tuning_2021,pierce_unconventional_2021}, with new tools emerging to visualize and manipulate these phases~\cite{utama_visualization_2021,ciarrocchi_excitonic_2022}.
+
+\subsection{Twistronics: Quantum Origami}
+\label{section:1.3.1}
+
+It all started with a simple idea: take two sheets of graphene and twist one slightly on top of the other. That small rotation creates a large-scale interference pattern—a moiré superlattice—that acts like a scaffold, reshaping how electrons move through the material~\cite{bistritzer_moire_2011}. This approach came to be known as ``twistronics.''
+
+At the so-called ``magic angle'' (around $1.1^\circ$), the bands flatten dramatically. Electron velocities drop to nearly zero across patches of momentum space, leading to a huge spike in the density of states. With kinetic energy suppressed, interactions take over—giving rise to superconductivity~\cite{cao_unconventional_2018}, correlated insulating states~\cite{cao_correlated_2018}, and rich spin and valley textures~\cite{sharpe_emergent_2019}.
+
+As elegant as the idea is, its execution is anything but simple. Achieving the magic angle requires extreme precision—within about $\pm 0.1^\circ$—and even slight inhomogeneities across the sample can wash out the flat bands entirely. It’s like tuning a piano with a micrometer: possible, but hard to scale.
+
+Twistronics showed what’s possible when band structure is tuned with atomic precision. But it also revealed the limits of this approach: extreme sensitivity to twist angle, narrow fabrication windows, and challenges in scalability. The physics is extraordinary—but the method remains delicate.
+
+\section{Our Approach: Squeezing into Flatness}
+\label{section:1.4}
+
+When we first started thinking about ripples in 2D materials, we were struck by a simple observation: everyone treats them as problems to solve. The standard protocol in any fabrication lab is to minimize these corrugations, iron them out, make everything as flat as possible. But staring at AFM images of wrinkled monolayers late one evening, we couldn't help wondering---what if these ripples weren't defects at all?
+
+This wasn't just idle speculation. We knew from prior work that TMDs are exquisitely sensitive to strain. Even tiny deformations shift their band structure. So if random wrinkles could perturb electronic properties, what might controlled, periodic ripples accomplish? The idea took hold: instead of fighting geometry, we could harness it.
+
+We focused on the group-VI TMDs---MoS\textsubscript{2}, WS\textsubscript{2}, MoSe\textsubscript{2}, and WSe\textsubscript{2}---precisely because they combine mechanical flexibility with this strain sensitivity. Our approach was straightforward in concept: apply controlled uniaxial compression to a suspended monolayer and let it buckle. Not random buckling, but ordered rippling---a periodic modulation that would create alternating regions of tensile and compressive strain.
+
+The physics we envisioned was compelling. Each ripple would act like a tiny strain field, pulling the lattice apart at peaks and squeezing it together in valleys. String enough of these together, and you'd create a one-dimensional superlattice---not by stacking different materials, but by folding a single sheet into a corrugated landscape. The electrons would see this landscape as a periodic potential, potentially strong enough to reshape their wavefunctions and confine their motion.
+
+Our central hypothesis emerged from this thinking: systematic compression along one crystallographic direction would induce periodic rippling that breaks the material's natural symmetry. This symmetry breaking, combined with the strain-induced potential modulation, could generate fundamentally new electronic behavior---directional transport, quasi-one-dimensional confinement, perhaps even topological edge states. We were proposing to write heterostructures not with atoms, but with geometry itself. Figure~\ref{fig:ripple_sequence} illustrates the progression we anticipated: from initial compression through the buckling transition to ripple formation, ultimately leading to dramatic electronic reconstruction.
+
+What we discovered exceeded our initial expectations. Under compression, these atomically thin sheets transformed from uniform blankets into richly textured quantum landscapes. The periodic ripples carved pathways for electrons, creating preferential directions for transport and confining carriers to quasi-one-dimensional channels. The material's electronic structure reorganized itself according to the dictates of curvature---no external gates required, no complex fabrication steps, just the pure geometric modulation doing the work.
+
+We've come to call this approach \emph{rippletronics}: the deliberate engineering of electronic properties through controlled periodic deformation. Unlike traditional strain engineering, which typically relies on static, uniform stress fields, rippletronics exploits the dynamic interplay between curvature and electronic structure. It's a strategy where mechanical deformation becomes a design tool, where the shape of space at the nanoscale directly sculpts the quantum mechanical landscape that electrons inhabit.
+
+In short: while our colleagues in twistronics have perfected the art of quantum origami, we propose \emph{rippletronics} as an alternative design paradigm—one where simply giving a monolayer a gentle squeeze can be just as transformative.\footnote{We will see that, sometimes, a good squeeze beats a good twist.} 
+
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+node distance=1.3cm and 1.2cm,
+every node/.style={
+draw,
+rectangle,
+rounded corners,
+minimum height=1.1cm,
+minimum width=2.9cm,
+align=center,
+font=\small,
+text=black
+},
+shorten >=3pt, shorten <=3pt
+]
+\node[fill=orange!10!white] (comp) {Compression};
+\node[fill=orange!20!white, right=of comp] (buck) {Buckling\\(Transition)};
+\node[fill=orange!30!white, right=of buck] (ripple) {Ripple\\Formation\\(Curvature)};
+\node[fill=orange!50!white, right=of ripple] (flat) {Band\\Flattening\\(Hole\\Localization)};
+\foreach \i/\j in {comp/buck, buck/ripple, ripple/flat}
+\draw[->, thick] (\i) -- (\j);
+\end{tikzpicture}
+\caption{Progression from mechanical deformation to electronic reconstruction in monolayer TMDs. The sequence shows how uniaxial compression initiates a buckling transition, leading to periodic ripple formation with inherent curvature, ultimately resulting in band flattening and hole localization. The color gradient represents the increasing degree of structural and electronic modification.}
+\label{fig:ripple_sequence}
+\end{figure}
+
+
+\section{How This Unfolds: Structure and Organization}
+\label{section:1.5}
+
+The rest of this thesis follows the natural arc of our investigation—from atoms to ripples, from ripples to bands, and from bands to broader implications.
+
+\begin{itemize}
+    \item \textbf{Chapter 2} lays the computational and physical groundwork. We define the material systems, compression protocols, and band structure signatures relevant to our study. We also describe our simulation workflow and validation procedures—laying out, step by step, how we go from geometry to quantum predictions.
+
+    \item \textbf{Chapter 3} delves into rippletronics in action. We visualize the ripple morphology under compression, analyze how curvature reshapes the band structure, and trace the emergence of flat bands and hole localization across four TMD compositions. We also explore how ripple geometry influences confinement strength and band flattening trends.
+
+    \item \textbf{Chapter 4} broadens the lens. We reflect on the key findings, assess rippletronics alongside twistronics, and outline the prospects for experimental realization and device design. The final sections gesture toward future directions—more ripples, more control, and perhaps more surprises.
+
+    \item \textbf{The Appendices} contain supporting material, including full band structures and LDOS plots for each TMD, convergence studies, and technical benchmarks.
+\end{itemize}
+
+
+\chapter{Our Computational Framework: From Atoms to Bands}
+\label{chapter:2}
+
+
+\section{Compression-Induced Quantum Engineering in Monolayer TMDs}
+\label{section:2.1}
+
+2D materials provide an exceptionally tunable platform for quantum engineering. Freed from the constraints of three-dimensional crystallinity, monolayer TMD can stretch, bend, and buckle in ways that dramatically reshape their electronic behavior. When compressed uniaxially, these atomically thin sheets don't simply contract—they can wrinkle, dimple, delaminate, or buckle out-of-plane. Among these deformation modes, {periodic wrinkling} is especially compelling, as it reshapes not just the crystal lattice but the underlying quantum landscape: the electronic band structure itself.
+
+This chapter introduces our computational framework for exploring how geometry and quantum mechanics become entangled in such systems. Our central hypothesis is simple but powerful: {by applying controlled mechanical strain, we can sculpt the electronic structure of 2D materials}. When a flat monolayer is gently squeezed, it develops a ripple pattern—creating a spatially varying potential landscape. These ripples act like nanoscale quantum wells and barriers, confining carriers, flattening bands, and enhancing interactions. The result? A strain-tunable quantum playground where geometry becomes a design knob for electronic function.
+
+To investigate this idea, we employ a multi-scale modeling strategy that couples classical elasticity, \textit{ab initio} structural relaxation, and quantum-mechanical band structure analysis. But before we dive into the simulation machinery, let's pause to ask: \textit{why choose MoS\textsubscript{2} as our prototype?}
+
+\vspace{1em}
+\noindent
+MoS\textsubscript{2} offers an ideal testbed for this study, bringing together the structural simplicity, orbital richness, and mechanical responsiveness required for meaningful strain-induced effects.
+
+\subsection*{Atomic and Electronic Structure}
+
+Monolayer MoS\textsubscript{2} consists of a single layer of molybdenum (Mo, $Z = 42$) atoms sandwiched between two layers of sulfur (S, $Z = 16$), forming a three-atom-thick hexagonal sheet. Mo atoms occupy trigonal prismatic coordination sites defined by the surrounding S atoms, creating strong in-plane covalent bonds and weak out-of-plane van der Waals interactions. The result is a material that is both mechanically robust and remarkably flexible—ideal for deformation-driven studies.
+
+On the electronic side, the band structure of MoS\textsubscript{2} emerges from hybridization between Mo 4d and S 3p orbitals. Near the band edges, these interactions shape the conduction and valence bands in ways highly sensitive to strain. Figure~\ref{fig:lattice} illustrates the real-space lattice and its corresponding Brillouin zones, including both the primitive and rectangular unit cells used in our simulations.
+
+\subsection*{Band Gap, Orbital Texture, and Valley Physics}
+
+In its monolayer form, 1H-MoS\textsubscript{2} features a direct band gap of approximately 1.8\,eV located at the K point—a stark contrast to the indirect gap of its bulk counterpart. This direct transition enables efficient light absorption and emission, making the material attractive for photodetectors, LEDs, and solar cells.
+
+The conduction band minimum (CBM) is primarily composed of Mo 4d$_{\text{z}^2}$ orbitals, while the valence band maximum (VBM) draws from a mix of 4d$_{\text{xy}}$ and 4d$_{\text{x}^2 - \text{y}^2}$ states, along with minor contributions from S 3p$_{\text{x}}$ and 3p$_{\text{y}}$. Crucially, spin--orbit coupling—amplified by the heavy Mo atoms—lifts degeneracies at the valence band edge. This results in distinct spin-split bands at the K and K$'$ valleys, enabling {valley-selective optical excitation}. In this regime, circularly polarized light can selectively address electrons in different valleys, laying the groundwork for valleytronic information encoding.
+
+\begin{table}[h!]
+\centering
+\footnotesize
+\caption{Electronic configurations and orbital characteristics of selected monolayer TMDs.}
+\label{tab:TMDs}
+\renewcommand{\arraystretch}{1.3}
+\rowcolors{2}{gray!10}{white}
+\begin{tabular}{|>{\centering\arraybackslash}m{1.9cm}|
+                >{\centering\arraybackslash}m{2.8cm}|
+                >{\centering\arraybackslash}m{3.2cm}|
+                >{\centering\arraybackslash}m{3.4cm}|
+                >{\centering\arraybackslash}m{1.9cm}|}
+\hline
+\textbf{Compound} & \textbf{TM Config.} & \textbf{Chalcogen Config.} & \textbf{Dominant Orbitals (CB/VB)} & \textbf{Band Gap Type} \\
+\hline
+MoS\textsubscript{2}  & [Kr] 4d\textsuperscript{5} 5s\textsuperscript{1} & [Ne] 3s\textsuperscript{2} 3p\textsuperscript{4} & Mo 4d / S 3p & Direct (K) \\
+WS\textsubscript{2}  & [Xe] 4f\textsuperscript{14} 5d\textsuperscript{4} 6s\textsuperscript{2} & [Ne] 3s\textsuperscript{2} 3p\textsuperscript{4} & W 5d / S 3p & Direct (K) \\
+MoSe\textsubscript{2} & [Kr] 4d\textsuperscript{5} 5s\textsuperscript{1} & [Ar] 3d\textsuperscript{10} 4s\textsuperscript{2} 4p\textsuperscript{4} & Mo 4d / Se 4p & Direct (K) \\
+WSe\textsubscript{2}  & [Xe] 4f\textsuperscript{14} 5d\textsuperscript{4} 6s\textsuperscript{2} & [Ar] 3d\textsuperscript{10} 4s\textsuperscript{2} 4p\textsuperscript{4} & W 5d / Se 4p & Direct (K) \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\subsection*{Mechanical Anisotropy and Ripple Formation}
+
+MoS\textsubscript{2} also exhibits significant \textbf{mechanical anisotropy}. While its in-plane Young's modulus rivals that of graphene, its elastic response depends strongly on direction. Compression along the armchair (or $y$) direction induces out-of-plane buckling more readily than along the zigzag ($x$) direction—a consequence of how Mo--S bonds are oriented within the hexagonal lattice.
+
+We capitalize on this directional softness in our simulations. By applying uniaxial compression along the armchair axis, we drive the system from a flat geometry into a periodically rippled configuration. These ripples are not just geometric curiosities; they serve as a {morphological scaffold for electronic reshaping}. As we will see in subsequent sections, ripple-induced strain modulates the local potential landscape, producing flat bands, localized carrier states, and enhanced effective masses. In short, the geometry becomes the band engineer.
+
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.675\textwidth]{Figures/lattice.pdf}
+  \caption[Direct- and reciprocal-space lattices of 1H-MoS\textsubscript{2}]{\textbf{Direct- and reciprocal-space lattices of 1H-MoS\textsubscript{2}.} Top: real-space lattice with Mo (light blue) and S (yellow) atoms. The primitive hexagonal unit cell is shown in light gray, and the rectangular supercell used for compression modeling is overlaid in dark gray. Bottom: corresponding Brillouin zones with the irreducible wedge for the $M \times N$ supercell.}
+  \label{fig:lattice}
+\end{figure}
+
+\section{From Atoms to Bands: Computational Protocol for Compression}
+\label{section:2.3}
+
+To explore how uniaxial compression induces rippling in monolayer MoS\textsubscript{2}, we begin by constructing rectangular supercells of size $1 \times N$, extended along the armchair ($y$) direction. This geometry enables periodic deformation while preserving the in-plane hexagonal symmetry. Compression is applied incrementally along the $y$-axis, while allowing full relaxation of atomic positions in all degrees of freedom. This quasi-static approach captures the gradual evolution from a flat to a rippled morphology with high fidelity~\cite{li_buckling_2021, stewart_atomistic_2013}.
+
+Compression is defined as:
+\begin{equation}
+C = -100\% \cdot \frac{L - L_0}{L_0},
+\end{equation}
+where $L_0$ is the equilibrium supercell length along $y$, and $L$ is the compressed length. We vary $C$ continuously from 0\% to 20\%, using fine strain increments to resolve the critical threshold at which buckling occurs.
+
+Each strain level undergoes a three-step simulation protocol:
+\begin{enumerate}
+  \item \textbf{Classical force-field relaxation} using interatomic potentials to determine the relaxed atomic structure under compression;
+  \item \textbf{DFT relaxation} of the resulting structure for quantum-level accuracy in atomic positions;
+  \item \textbf{Band structure calculation} on the relaxed geometry to extract the electronic consequences of compression-induced rippling.
+\end{enumerate}
+
+All simulations employ periodic boundary conditions in-plane and include a large vacuum buffer out-of-plane to eliminate interactions between periodic images. This ensures that the resulting band structures reflect intrinsic behavior rather than finite-size or boundary artifacts.
+\vspace{1em}
+
+\section{Reading the Bands: Folding Effects and the Supercell Lens}
+\label{section:2.4}
+
+Before ripples are introduced, it is crucial to first understand the electronic structure of a pristine, unstrained monolayer. Figure~\ref{subfig:band_primitive} displays the canonical band structure of MoS\textsubscript{2}, computed using the primitive hexagonal unit cell along the high-symmetry path $\Gamma$--$\mathrm{M}$--$\mathrm{K}$--$\Gamma$. As expected, the system exhibits a direct band gap at the $\mathrm{K}$ point—a hallmark of monolayer TMDs. Just as striking is the ``Mexican hat'' curvature seen near the valence band maximum (VBM) between $\Gamma$ and $\mathrm{K}$. This subtle concavity signals a van Hove singularity in the density of states and sets the stage for flat-band formation under strain-induced perturbations.
+
+Yet the primitive-cell framework, elegant as it is, proves too rigid for capturing long-wavelength deformations like ripples. These structures span tens of unit cells, breaking translational symmetry over extended length scales. To model them faithfully, we must adopt a new lattice geometry that accommodates both structural and electronic periodicity at ripple scale.
+
+Figure~\ref{subfig:band_rectangular} presents the band structure of MoS\textsubscript{2} calculated using a rectangular unit cell aligned along the zigzag ($x$) and armchair ($y$) directions. This rectangularization reshapes the Brillouin zone and alters the high-symmetry path to $\Gamma$--$\mathrm{X}$--$\mathrm{S}$--$\mathrm{Y}$--$\Gamma$. At first glance, the spectrum appears more crowded, with folded bands and new apparent features. But crucially, the essential physics remains unchanged: the direct band gap persists, and the orbital character of the band edges is preserved. What has changed is the mathematical scaffolding—the way symmetry is expressed in reciprocal space.
+
+To simulate ripple formation, we take this rectangular cell and replicate it $N$ times along the armchair direction, forming a $1 \times N$ supercell. This extended geometry allows us to resolve structural modulations with wavelengths on the order of nanometers—precisely the scale at which ripples form under compression. In reciprocal space, this elongation shrinks the Brillouin zone along $k_y$ by a factor of $N$, and the band structure becomes correspondingly folded. The folding interval is given by
+\begin{equation}
+\Delta k_y = \frac{2\pi}{N a},
+\end{equation}
+where $a$ is the unit cell length in the $y$-direction. Each band from the primitive Brillouin zone is now reproduced $N$ times, leading to a proliferation of apparent crossings, hybridizations, and mini-gaps.
+
+This supercell approach brings distinct advantages. First, it enables the inclusion of long-wavelength strain patterns such as periodic buckling. Second, it allows for a realistic treatment of non-uniform potentials and strain gradients. Third, it reveals fine-scale electronic changes—such as effective mass renormalization or local band flattening—that are invisible in smaller cells. In effect, the supercell acts as a microscope, revealing how slowly varying geometry imprints itself on the quantum wavefunctions.
+
+However, this power comes with a caveat. Not all features in the folded band structure correspond to physically distinct states. Many are simply mathematical echoes—artifacts of zone folding rather than genuine responses to strain. These phantom bands can obscure interpretation, especially near the band edges where subtle changes matter most. A central task in our analysis, then, is to distinguish these symmetry-induced replicas from true indicators of strain-driven physics.
+
+To clarify the distinctions between the primitive and rectangular frameworks, we provide a detailed comparison in Table~\ref{tab:cell_comparison}. This side-by-side summary highlights the differences in real-space lattice vectors, Brillouin zone dimensions, reciprocal vectors, and use cases. Together, it forms the conceptual foundation for the ripple-induced band structure calculations presented in the chapters ahead.
+
+\begin{table}[ht]
+\centering
+\caption[Comparison of Primitive and Rectangular Supercells]{\textbf{Comparison of Primitive and Rectangular Supercells.} Key physical and reciprocal space characteristics of the primitive hexagonal cell and the rectangular $1 \times N$ armchair supercell used in MoS\textsubscript{2} simulations.}
+\label{tab:cell_comparison}
+\renewcommand{\arraystretch}{1.4}
+\rowcolors{2}{gray!10}{white}
+\begin{tabular}{>{\bfseries}m{4.2cm} | m{5.2cm} | m{5.2cm}}
+\toprule
+\textbf{Feature} & \textbf{Primitive Cell (Hexagonal)} & \textbf{Rectangular Supercell ($1 \times N$)} \\
+\midrule
+\textbf{Real-Space Lattice Vectors} 
+& $\boldsymbol{a}_1 = a(1, 0)$ \newline $\boldsymbol{a}_2 = a(-\tfrac{1}{2}, \tfrac{\sqrt{3}}{2})$ 
+& $\boldsymbol{a}_1 = a(1, 0)$ \newline $\boldsymbol{a}_2 = Na(0, \sqrt{3})$ \\
+\textbf{Physical Area} 
+& $A = \tfrac{\sqrt{3}}{2}a^2$ 
+& $A = N \sqrt{3} a^2$ \\
+\textbf{Reciprocal Vectors} 
+& $\boldsymbol{b}_1 = \dfrac{2\pi}{a}\left(1, \tfrac{1}{\sqrt{3}}\right)$ \newline $\boldsymbol{b}_2 = \dfrac{2\pi}{a}\left(0, \tfrac{2}{\sqrt{3}}\right)$ 
+& $\boldsymbol{b}_1 = \dfrac{2\pi}{a}(1, 0)$ \newline $\boldsymbol{b}_2 = \dfrac{2\pi}{a}\left(0, \tfrac{1}{N\sqrt{3}}\right)$ \\
+\textbf{Brillouin Zone Area} 
+& $A_k = \dfrac{8\pi^2}{\sqrt{3}a^2}$ 
+& $A_k = \dfrac{1}{N} \cdot \dfrac{4\pi^2}{\sqrt{3}a^2}$ \\
+\textbf{IBZ Path} 
+& $\Gamma$--$\mathrm{M}$--$\mathrm{K}$--$\Gamma$ 
+& $\Gamma$--$\mathrm{X}$--$\mathrm{S}$--$\mathrm{Y}$--$\Gamma$ \\
+\textbf{Folding Factor} 
+& --- 
+& $N$-fold folding along $k_y$ \\
+\textbf{Example Use} 
+& Pristine monolayer 
+& Rippled systems \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{figure}[htp]
+  \centering
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Figures/MoS2/1x1-primitive/bands/nonperiodic/1-bands-1x1-primitive-0.pdf}
+    \caption{Primitive cell: $\Gamma$--$\mathrm{M}$--$\mathrm{K}$--$\Gamma$}
+    \label{subfig:band_primitive}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Figures/MoS2/1x1-rectangular/bands/nonperiodic/1-bands-1x1-rectangular-0.pdf}
+    \caption{Rectangular cell: $\Gamma$--$\mathrm{X}$--$\mathrm{S}$--$\mathrm{Y}$--$\Gamma$}
+    \label{subfig:band_rectangular}
+  \end{subfigure}
+
+  \caption[Band structures of pristine MoS\textsubscript{2} in primitive and rectangular cells.]{\textbf{Band structures of pristine MoS\textsubscript{2} in primitive and rectangular cells.} 
+  \textbf{Left:} Primitive cell band structure showing a direct gap at $\mathrm{K}$. 
+  \textbf{Right:} Rectangular cell band structure where zone folding introduces new features.}
+  \label{fig:band_structures}
+\end{figure}
+
+\subsection*{Classical Relaxation with LAMMPS: The Sketching Phase}
+\label{section:2.4.1}
+
+Every detailed portrait begins with a sketch. In our simulations, that initial sketch is drawn using LAMMPS—the Large-scale Atomic/Molecular Massively Parallel Simulator~\cite{thompson2022lammps}. While our final goal is quantum-level accuracy, we first rely on classical mechanics to efficiently predict the large-scale structural response of MoS\textsubscript{2} monolayers under uniaxial compression. LAMMPS provides the scalability to relax large supercells—often containing thousands of atoms—allowing us to capture the emergence of long-wavelength ripple modes at low computational cost.
+
+At the core of this approach lies Newton's second law:
+\begin{equation}
+m_i \ddot{\boldsymbol{r}}_i = \boldsymbol{F}_i = -\nabla_i U(\{\boldsymbol{r}_j\}),
+\end{equation}
+where $m_i$ and $\boldsymbol{r}_i$ are the mass and position of atom $i$, respectively, and $U$ is the total interatomic potential energy defined over the full atomic configuration $\{\boldsymbol{r}_j\}$.
+
+\vspace{0.5em}
+
+To model the interactions in MoS\textsubscript{2}, we employ a reactive empirical bond-order (REBO) potential~\cite{brenner_empirical_1990, liang_parametrization_2009}. This potential captures both bond formation and angular dependencies—essential ingredients for describing curvature and out-of-plane deformation. Its general form is:
+\begin{equation}
+U_{\mathrm{REBO}} = \sum_{i}\sum_{j>i} \left[ V^R_{ij}(r_{ij}) - \bar{b}_{ij} V^A_{ij}(r_{ij}) \right],
+\end{equation}
+where $V^R_{ij}$ and $V^A_{ij}$ are pairwise repulsive and attractive interactions, and $\bar{b}_{ij}$ is a bond-order term that encodes local coordination and angular geometry.
+
+\paragraph{Minimization over Dynamics}
+
+Although LAMMPS is designed for molecular dynamics (MD), we use it here as a static energy minimizer. Instead of integrating atomic trajectories over time, we optimize the atomic positions to find the mechanically stable configuration under a prescribed compression along the armchair ($y$) axis:
+\begin{equation}
+\min_{\{\boldsymbol{r}_i\}} U(\{\boldsymbol{r}_i\}) \quad \text{subject to } L_y < L_y^{(0)}.
+\end{equation}
+Here, $L_y$ is the compressed supercell length, and $L_y^{(0)}$ is the equilibrium length.
+
+Two primary minimization algorithms are used in LAMMPS:
+\begin{itemize}
+  \item \textbf{Conjugate Gradient (CG):} An efficient first-order method that updates positions using a gradient-based search direction conjugate to previous steps.
+  \item \textbf{FIRE (Fast Inertial Relaxation Engine):} A hybrid method with velocity damping and adaptive step control, particularly effective in complex energy landscapes.
+\end{itemize}
+
+The update equation in these schemes takes the general form:
+\begin{equation}
+\boldsymbol{r}_i^{(n+1)} = \boldsymbol{r}_i^{(n)} + \alpha^{(n)} \boldsymbol{d}_i^{(n)},
+\end{equation}
+where $\boldsymbol{d}_i^{(n)}$ is the search direction and $\alpha^{(n)}$ is an adaptive step size.
+
+\vspace{0.5em}
+
+\paragraph{Simulation Parameters and Setup}
+
+The parameters used for ripple relaxation are summarized in Table~\ref{tab:lammps_params}. We adopt periodic boundary conditions in-plane and allow full atomic relaxation out-of-plane, enabling spontaneous buckling. To ensure convergence to a mechanically stable ripple, we minimize until all atomic forces fall below $10^{-4}$ eV/\AA.
+
+\begin{table}[ht]
+\centering
+\caption[LAMMPS Parameters]{\textbf{LAMMPS Parameters.} Classical relaxation setup for generating rippled configurations under uniaxial compression.}
+\label{tab:lammps_params}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.4\textwidth}>{\raggedright\arraybackslash}p{0.45\textwidth}}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Interatomic potential & REBO potential for MoS\textsubscript{2} \\
+Strain direction & Armchair ($y$-axis) \\
+Strain increments & 0.25--0.5\% per step \\
+Relaxation algorithm & CG and FIRE \\
+Force convergence threshold & $10^{-4}$ eV/\AA \\
+Boundary conditions & Periodic (in-plane) \\
+Temperature & 0 K (static) \\
+Out-of-plane degrees of freedom & Fully relaxed \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Workflow Overview}
+
+Figure~\ref{fig:LAMMPS} illustrates the classical workflow: starting from an undeformed configuration, we incrementally compress the system along $y$, minimize the total energy, and extract the ripple geometry from the resulting relaxed atomic structure.
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[width=0.75\textwidth]{Figures/Schematics/LAMMPS.pdf}
+  \caption[LAMMPS Workflow]{\textbf{LAMMPS Workflow.} Schematic of the classical relaxation pipeline: initialize structure, apply uniaxial compression, minimize energy using CG/FIRE, and extract ripple amplitude and wavelength.}
+  \label{fig:LAMMPS}
+\end{figure}
+
+\paragraph{Advantages and Limitations}
+
+Classical methods offer exceptional speed and scale, with computational complexity scaling roughly as $\mathcal{O}(N \log N)$. This allows us to study supercells large enough to host realistic ripple wavelengths ($\lambda \sim 5$--$10$~nm), which would be prohibitively expensive in quantum simulations.
+
+However, the trade-off is accuracy. Classical potentials lack the electronic degrees of freedom needed to capture charge redistribution, orbital hybridization, or band structure effects. Thus, the geometries generated by LAMMPS serve as structurally accurate, but electronically incomplete, inputs for quantum-level refinement. In that sense, LAMMPS provides the sketch—and as we show next, SIESTA fills in the quantum color.
+
+\subsection*{DFT Refinement with SIESTA: Adding Quantum Color}
+\label{section:2.4.2}
+
+Once the classical sketch is complete, we shift to a higher-resolution tool—SIESTA (Spanish Initiative for Electronic Simulations with Thousands of Atoms)~\cite{soler_siesta_2002}—to paint the quantum mechanical details. SIESTA is a density functional theory (DFT) code that enables large-scale simulations using a linear combination of atomic orbitals (LCAO) basis. Its efficiency and scalability make it ideal for treating rippled monolayers where both real-space resolution and band structure fidelity are crucial.
+
+At the heart of SIESTA's formalism lies the Kohn--Sham equation:
+\begin{equation}
+\left[-\frac{\hbar^2}{2m} \nabla^2 + V_{\mathrm{ext}}(\boldsymbol{r}) + V_H[\rho](\boldsymbol{r}) + V_{\mathrm{XC}}[\rho](\boldsymbol{r}) \right] \psi_i(\boldsymbol{r}) = \varepsilon_i \psi_i(\boldsymbol{r}),
+\end{equation}
+where $V_{\mathrm{ext}}$ is the external ionic potential, $V_H[\rho]$ is the classical Hartree potential, and $V_{\mathrm{XC}}[\rho]$ is the exchange--correlation functional capturing quantum many-body effects. The electronic density is reconstructed as
+\begin{equation}
+\rho(\boldsymbol{r}) = \sum_i f_i |\psi_i(\boldsymbol{r})|^2,
+\end{equation}
+with $f_i$ the occupation factors and $\psi_i$ the Kohn--Sham orbitals.
+
+\paragraph{Localized Basis for Efficiency}
+
+SIESTA expands each orbital $\psi_i$ using a finite set of strictly localized atomic-like basis functions:
+\begin{equation}
+\psi_i(\boldsymbol{r}) = \sum_\mu c_{i\mu} \phi_\mu(\boldsymbol{r}),
+\end{equation}
+where $\phi_\mu$ are confined pseudo-atomic orbitals tabulated on a radial grid. This localization leads to sparse Hamiltonians and reduces computational scaling to near-linear for large systems. Unlike plane-wave codes, SIESTA avoids vacuum penalties and enables fine resolution of strain-localized states in rippled geometries.
+
+\paragraph{Exchange--Correlation Functional Choice}
+
+We adopt the generalized gradient approximation (GGA) in the Perdew–Burke–Ernzerhof (PBE) form~\cite{perdew_generalized_1996}:
+\begin{equation}
+E_{\mathrm{XC}}[\rho] = \int \varepsilon_{\mathrm{XC}}(\rho, \nabla \rho)\, \rho(\boldsymbol{r})\, d\boldsymbol{r}.
+\end{equation}
+PBE captures density gradients, improving structural predictions for low-dimensional and layered systems. Though band gaps are underestimated relative to experiment, PBE remains a standard choice for relaxed geometries and qualitative band trends.
+
+Table~\ref{tab:xc_summary} compares different exchange--correlation approximations. While we focus on GGA for all reported results, this summary serves as reference for interpreting future extensions using hybrid or van der Waals (vdW) functionals.
+
+\begin{table}[ht]
+\footnotesize
+\centering
+\caption[Comparison of XC Functionals]{\textbf{Comparison of Exchange--Correlation Functionals.} Typical effects of LDA, GGA, and hybrid functionals on structural and electronic predictions in TMD systems.}
+\label{tab:xc_summary}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Property} & \textbf{LDA} & \textbf{GGA--PBE} & \textbf{Hybrid (e.g., HSE06)} \\
+\midrule
+Lattice constant $a$ & Underestimated & Slightly overestimated & Accurate \\
+Bulk modulus $B$ & Overestimated & Slightly underestimated & Accurate \\
+Cohesive energy $E_c$ & Too high & Slightly low & Close to experiment \\
+Band gap $E_{\mathrm{gap}}$ & $\sim$50\% too low & $\sim$40--50\% too low & Approaches experimental value \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Self-Consistent Cycle and Mixing}
+
+SIESTA solves the Kohn--Sham equations self-consistently through an iterative SCF process:
+\begin{enumerate}
+  \item Begin with an initial guess $\rho^{(0)}(\boldsymbol{r})$
+  \item Construct the Kohn--Sham Hamiltonian $H_{\mathrm{KS}}[\rho^{(n)}]$
+  \item Solve for orbitals $\psi_i$ and recompute $\rho^{(n+1)}$
+  \item Mix $\rho^{(n+1)}$ and $\rho^{(n)}$ to obtain the next input density
+\end{enumerate}
+Density mixing is stabilized using Pulay's method:
+\begin{equation}
+\rho^{\text{mixed}} = \alpha \rho^{(n+1)} + (1 - \alpha) \rho^{(n)} + \sum_k \beta_k \Delta \rho^{(k)},
+\end{equation}
+where $\alpha$ is a mixing coefficient (typically 0.1--0.3), and the history terms $\Delta \rho^{(k)}$ are used to accelerate convergence.
+
+\paragraph{SIESTA Parameters and Convergence Strategy}
+
+All quantum calculations in this work use the setup summarized in Table~\ref{tab:siesta_params}. These values were selected based on convergence tests, balancing accuracy and efficiency for large rippled supercells.
+
+\begin{table}[ht]
+\centering
+\caption[SIESTA Parameters]{\textbf{SIESTA Parameters.} DFT setup for structural refinement and band structure analysis of rippled MoS\textsubscript{2}.}
+\label{tab:siesta_params}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.4\textwidth}>{\raggedright\arraybackslash}p{0.45\textwidth}}
+\toprule
+\textbf{Parameter} & \textbf{Value} \\
+\midrule
+Exchange--correlation functional & GGA--PBE \\
+Basis set & DZP (double-$\zeta$ polarized) \\
+Mesh cutoff & 300 Ry \\
+$k$-point grid & $8 \times 6 \times 1$ (Monkhorst--Pack) \\
+Vacuum spacing (out-of-plane) & $>20$~\AA \\
+Electronic temperature (smearing) & 300 K \\
+SCF convergence (density) & $10^{-5}$ \\
+SCF convergence (energy) & $10^{-4}$~eV \\
+Force convergence & 0.01~eV/\AA \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:SIESTA} illustrates the DFT refinement process, from input geometries to relaxed structures and resulting band structures. The diagram reflects the multi-step simulation workflow that combines classical and quantum layers.
+
+\begin{figure}[htp]
+  \centering
+  \includegraphics[width=0.9\textwidth]{Figures/Schematics/SIESTA.pdf}
+  \caption[Quantum mechanical workflow using SIESTA]{\textbf{Quantum mechanical workflow using SIESTA.} After ripple geometries are obtained from LAMMPS, SIESTA performs structural refinement, electronic relaxation, and band structure calculation.}
+  \label{fig:SIESTA}
+\end{figure}
+
+\paragraph{Advantages and Limitations}
+
+SIESTA allows us to bridge from atomistic strain to quantum observables. Its ability to handle large systems—while maintaining DFT accuracy—enables full band structure mapping of rippled supercells. However, even with localized basis sets and efficient solvers, the scaling remains roughly $\mathcal{O}(N^3)$ for dense Hamiltonians. This limits practical supercell sizes to a few thousand atoms.
+
+Moreover, standard functionals like PBE lack accurate treatment of excitonic effects, long-range dispersion, and strongly correlated phenomena. For these effects, more advanced methods (e.g., GW or hybrid functionals) may be necessary, though they are computationally more demanding.
+
+Nonetheless, within its regime of validity, SIESTA provides a reliable quantum lens to analyze how geometric ripples reshape the electronic landscape of MoS\textsubscript{2}. In the next section, we transition from calculation to interpretation—quantifying the ripple geometry and decoding its quantum mechanical consequences.
+
+\section{From Bits to Insights: Our Analysis Methodology}
+\label{section:2.6}
+
+With both structural and electronic data in hand, we now turn to the final stage: extracting physical insight from atoms and orbitals. Our workflow converts raw output from LAMMPS and SIESTA into quantitative metrics that describe ripple morphology, band flattening, orbital contributions, and electronic localization. These analyses form the backbone of our conclusions about curvature-induced quantum effects.
+
+\vspace{0.5em}
+\subsection*{Structural Analysis: Mapping the Nanoscale Landscape}
+
+The first task is to characterize the geometry of each relaxed configuration as a function of applied strain. For rippled monolayers, key geometric quantities include amplitude, wavelength, curvature, and local bond strain. These are derived directly from the atomic positions:
+
+\begin{table}[ht]
+\centering
+\caption[Ripple Geometry Metrics]{\textbf{Ripple Geometry Metrics.} Definitions of key structural parameters extracted from LAMMPS- and SIESTA-relaxed configurations.}
+\label{tab:ripple_geometry}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.63\textwidth}}
+\toprule
+\textbf{Quantity} & \textbf{Definition} \\
+\midrule
+Amplitude $A$ & Peak-to-peak out-of-plane displacement of Mo atoms: $A = \max(z_i) - \min(z_i)$ \\
+Wavelength $\lambda$ & Fitted from the sinusoidal model: $z(y) = A \sin\left(\frac{2\pi y}{\lambda} + \phi\right)$ \\
+Curvature $\kappa_{\max}$ & Max curvature from fitted profile: $\kappa_{\max} = \dfrac{4\pi^2 A}{\lambda^2}$ \\
+Bond-level strain & Relative changes in Mo--S bond lengths and S--Mo--S angles vs.\ pristine values \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These geometric parameters serve as direct proxies for the local strain landscape experienced by charge carriers. In particular, curvature $\kappa(y)$ creates spatially varying potentials that drive quantum confinement and electronic band modulation.
+
+\vspace{0.5em}
+
+\section{Electronic Analysis: Decoding the Quantum Response}
+
+Once ripples emerge under uniaxial compression, the resulting curvature sculpts more than just atomic positions—it reshapes the electronic landscape itself. Bands bend, orbitals mix, and charge carriers begin to congregate in curved pockets of the crystal. To systematically track these transformations, we extract a suite of electronic observables from our SIESTA-computed band structures and wavefunctions. While our primary focus lies in characterizing band flatness, charge localization, and orbital hybridization near the valence band edge, we present a broader set of metrics for completeness and future reference.
+
+\subsection{Mathematical Definitions of Core Metrics}
+
+We compute seven key metrics directly from our DFT band structures, focusing on the top valence band (\text{VB1}). Here are their precise mathematical forms:
+
+\subsubsection{1. Total Bandwidth}
+
+\begin{equation}
+    W_{\text{total}} = \max_{k} E_{\text{VB1}}(k) - \min_{k} E_{\text{VB1}}(k)
+\end{equation}
+
+This measures the full energy spread of the valence band across the entire Brillouin zone.
+
+\subsubsection{2. Directional Bandwidths}
+
+\begin{equation}
+    W_{\Gamma K} = \bigl|E_{\text{VB1}}(K) - E_{\text{VB1}}(\Gamma)\bigr|
+\end{equation}
+\begin{equation}
+    W_{\Gamma X} = \bigl|E_{\text{VB1}}(X) - E_{\text{VB1}}(\Gamma)\bigr|
+\end{equation}
+
+These probe anisotropic shifts along high-symmetry directions in both hexagonal and rectangular supercell formulations.
+
+\subsubsection{3. Flat-Region Detection}
+
+First, we locate the valence band maximum:
+\begin{equation}
+    k_{\text{VBM}} = \arg\max_k E_{\text{VB1}}(k), \quad E_{\text{VBM}} = \max_k E_{\text{VB1}}(k)
+\end{equation}
+
+Next, we compute the second derivative (curvature) on a fine \( k \)-grid \( k_f \):
+\begin{equation}
+    \frac{d^2E}{dk^2}(k_f)
+\end{equation}
+
+The ``flat'' mask is defined by the conjunction of two conditions:
+\begin{equation}
+    \left|\frac{d^2E}{dk^2}(k_f)\right| < \epsilon \, \max_{k_f}\left|\frac{d^2E}{dk^2}(k_f)\right| 
+    \quad \wedge \quad 
+    |k_f - k_{\text{VBM}}| < k_{\text{cutoff}}
+\end{equation}
+
+This identifies contiguous \( k \)-segments \(\{[a_i,b_i]\}\) satisfying the flatness criterion.
+
+\subsubsection{4. Flat-Region \( k \)-Length}
+
+\begin{equation}
+    \Delta k_{\text{flat}} = \max_i (b_i - a_i)
+\end{equation}
+
+This represents the largest momentum span of any identified flat segment.
+
+\subsubsection{5. Flat-Region Bandwidth}
+
+\begin{equation}
+    W_{\text{flat}} = \max_{k\in\text{flat}}E_{\text{VB1}}(k) - \min_{k\in\text{flat}}E_{\text{VB1}}(k)
+\end{equation}
+
+The energy width within the flat region, evaluated via spline interpolation on the selected \( k \)-points.
+
+\subsubsection{6. Flatness Ratio}
+
+Define the total \( k \)-span:
+\begin{equation}
+    \Delta k_{\text{total}} = \max_k k - \min_k k
+\end{equation}
+
+Then the flatness ratio is:
+\begin{equation}
+    \alpha_{\text{flat}} = 100 \times \frac{\Delta k_{\text{flat}}}{\Delta k_{\text{total}}} \, \%
+\end{equation}
+
+The percentage of the Brillouin zone satisfying our flatness threshold.
+
+\subsubsection{7. IPR Proxy}
+
+\begin{equation}
+    \text{IPR\_proxy} = \frac{1}{\Delta k_{\text{flat}} \times W_{\text{flat}}}
+\end{equation}
+
+An inverse measure of kinetic energy in the flat region, serving as a band-structure-derived estimate of real-space localization.
+
+\subsection{Analysis Criteria}
+
+Our analysis employs the following specific thresholds:
+
+\begin{enumerate}
+    \item Flat segments defined by curvature threshold:
+    \[
+    \left|\frac{d^2E}{dk^2}\right| < 5\%\times \max \left|\frac{d^2E}{dk^2}\right|
+    \]
+
+    \item Momentum (\( k \))-window around VBM:
+    \[
+    \pm 0.20 \, \mathrm{\AA}^{-1}
+    \]
+
+    \item \( W_{\mathrm{flat}} \) is the maximum \( \Delta E \) within the identified flat segments.
+
+    \item IPR proxy calculation:
+    \[
+    \mathrm{IPR\_proxy} = \frac{1}{\Delta k_{\mathrm{flat}} \cdot W_{\mathrm{flat}}}
+    \]
+\end{enumerate}
+
+\begin{table*}[ht]
+\small
+\centering
+\caption[Electronic Observables from DFT]{\textbf{Electronic Observables from DFT.} Key quantities used to characterize curvature-induced quantum effects in rippled MoS\textsubscript{2}, including band flattening, carrier localization, and orbital hybridization. While only a subset is used in our core analysis, we present the full set for reference and completeness.}
+\label{tab:electronic_metrics}
+\renewcommand{\arraystretch}{1.35}
+\rowcolors{2}{gray!10}{white}
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}p{11.8cm}}
+\toprule
+\textbf{Quantity} & \textbf{Definition and Physical Interpretation} \\
+\midrule
+\textbf{Band gap} $E_{\mathrm{gap}}$ & $E_{\mathrm{CBM}} - E_{\mathrm{VBM}}$; measures the fundamental energy gap between conduction and valence bands. A key indicator of semiconducting behavior and its modulation under strain. \\
+\textbf{Effective mass tensor} ${m}^*_{ij}$ & $\left(m^{-1}\right)_{ij} = \frac{1}{\hbar^2} \left. \frac{\partial^2 E}{\partial k_i \partial k_j} \right|_{\vb{k}_0}$; reflects the local curvature of a band near extrema and determines carrier mobility and anisotropic confinement. \\
+\textbf{Total bandwidth} $W_{\mathrm{total}}$ & $E_{\mathrm{max}} - E_{\mathrm{min}}$; total energy spread of a given band across the Brillouin zone. Smaller values correspond to flatter bands and suppressed kinetic energy. \\
+\textbf{Flat bandwidth} $W_{\mathrm{flat}}$ & Energy width of the nearly dispersionless segment of the valence band. Quantifies the degree of flattening induced by curvature. \\
+\textbf{Directional bandwidth} $W_{\Gamma\mathrm{K}}$ & $|E(\Gamma) - E(\mathrm{K})|$ in the hexagonal Brillouin zone; captures anisotropic shifts in the valence band under strain. \\
+\textbf{Directional bandwidth} $W_{\Gamma\mathrm{X}}$ & $|E(\Gamma) - E(\mathrm{X})|$ in rectangular supercells; equivalent directional bandwidth in the folded zone formalism. \\
+\textbf{Flatness ratio} $\alpha_{\mathrm{flat}}$ & $\alpha_{\mathrm{flat}} = \dfrac{k_{\mathrm{flat}}}{k_{\mathrm{total}}}$, where $k_{\mathrm{flat}}$ is the cumulative $k$-length over which $\left|\frac{d^2E}{dk^2}\right|$ falls below 5\% of its maximum value. Reflects how broadly the flat region extends in momentum space. \\
+\textbf{IPR proxy} (flatness-based) & $\text{IPR}_\text{proxy} \sim 1 / (W_{\mathrm{flat}} \cdot \alpha_{\mathrm{flat}})$; a band-structure-derived estimate of real-space localization. Useful when wavefunction data is unavailable. \\
+\textbf{Inverse Participation Ratio (IPR)} & $\text{IPR} = \dfrac{\int |\psi(\vb{r})|^4 d\vb{r}}{\left( \int |\psi(\vb{r})|^2 d\vb{r} \right)^2}$; measures the degree of real-space localization. High values indicate confinement to narrow ripple troughs. \\
+\textbf{Total density of states (DOS)} $D(E)$ & $D(E) = \sum_n \delta(E - \varepsilon_n)$; counts the number of available electronic states per energy. Computed with Gaussian broadening; peaks correspond to van Hove singularities. \\
+\textbf{Projected DOS (PDOS)} $D_\mu(E)$ & $D_\mu(E) = \sum_n |\braket{\phi_\mu | \psi_n}|^2 \delta(E - \varepsilon_n)$; decomposes the DOS by atomic orbital or atom type. Used to trace how curvature modifies orbital hybridization. \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\paragraph{When Is a Band Truly Flat?}\mbox{}\\[1ex]
+
+To avoid mistaking shallow curvature for genuine flatness, we establish thresholds for classifying flat bands based on the joint behavior of bandwidth, extent, and localization:
+\begin{itemize}
+  \item A band is \textbf{nearly flat} if $W_{\mathrm{flat}}$ falls in the range of 100--200~meV with moderate curvature.
+  \item A band is \textbf{fully flat} if:
+    \begin{itemize}
+      \item $W_{\mathrm{flat}} < 50$~meV (i.e., less than twice $k_B T$ at room temperature),
+      \item $\alpha_{\mathrm{flat}} > 0.1$ (at least 10\% of the BZ is flat),
+      \item $\text{IPR} > 0.1$ (the wavefunction is appreciably localized).
+    \end{itemize}
+\end{itemize}
+
+This classification distinguishes physical confinement from visual illusions. In fact, some bands near the $\Gamma$ point appear flat but exhibit increasing $W_{\Gamma\mathrm{K}}$ under compression---a phenomenon we term the ``bandwidth paradox.'' It arises from orbital-selective responses to strain: out-of-plane Mo $d_{z^2}$ states at $\Gamma$ shift differently than in-plane $d_{xy}$ or $d_{x^2 - y^2}$ states at $\mathrm{K}$, leading to deceptive flattening in energy plots without genuine localization.
+
+\paragraph{Mathematical Relationship Between IPR and Band Flatness}
+
+The inverse participation ratio (IPR) is a foundational metric for quantifying electronic localization in real space. For a wavefunction $\psi(\boldsymbol{r})$, the IPR is defined as
+\begin{equation}
+\text{IPR} = \frac{\int |\psi(\boldsymbol{r})|^4 \, d\boldsymbol{r}}{\left( \int |\psi(\boldsymbol{r})|^2 \, d\boldsymbol{r} \right)^2},
+\end{equation}
+which measures the extent to which the wavefunction is concentrated spatially. Delocalized states yield IPR values approaching $1/L^2$, where $L$ is the system size, while perfectly localized states approach IPR~$\approx 1$.
+
+When real-space wavefunctions are unavailable, we approximate localization using an IPR proxy derived from band flatness metrics. Specifically, we propose the relationship
+\begin{equation}
+\text{IPR}_{\text{proxy}} \propto \frac{1}{W_{\mathrm{flat}} \cdot \alpha_{\mathrm{flat}}},
+\end{equation}
+where $W_{\mathrm{flat}}$ is the flat bandwidth and $\alpha_{\mathrm{flat}}$ is the flatness ratio. Physically, this makes sense: as $W_{\mathrm{flat}}$ decreases, band dispersion is suppressed, leading to more localized states. The role of $\alpha_{\mathrm{flat}}$ is more nuanced: while a larger $\alpha_{\mathrm{flat}}$ indicates broader flatness in $k$-space, the Fourier uncertainty principle implies that flatter and more localized regions in $k$ correspond to tighter confinement in real space. Thus, this product inversely captures confinement strength.
+
+In twisted bilayer systems and rippled TMDs, this localization has been directly observed using scanning tunneling microscopy, especially near ``magic angles'' or strain values that induce ultra-flat bands. The IPR-flatness relationship offers a practical route for estimating localization without expensive wavefunction calculations, enabling efficient screening of 2D materials for correlated or confined electronic phases.
+
+In the chapters that follow, we will apply a focused subset of these metrics---particularly the band gap $E_{\mathrm{gap}}$, the effective mass tensor $m_{ij}^*$, the flat bandwidth $W_{\mathrm{flat}}$, and the flatness ratio $\alpha_{\mathrm{flat}}$---to dissect the emergence of localized hole states, curvature-induced band flattening, and ripple-driven quantum modulation in monolayer MoS\textsubscript{2}.
+
+
+\subsection*{Summary: A Two-Layered View of Rippletronics}
+
+Our methodology integrates classical mechanics and quantum electronic structure into a unified pipeline:
+
+\begin{enumerate}
+  \item \textbf{Classical layer (LAMMPS):} Captures ripple formation under strain and extracts geometric descriptors ($A$, $\lambda$, $\kappa$).
+  \item \textbf{Quantum layer (SIESTA):} Refines the relaxed structure and computes $E_{\mathrm{gap}}$, $m^*_{ij}$,  $W_{\mathrm{flat}}$, and $\alpha_{\mathrm{flat}}$ to reveal how curvature reshapes the band structure and influences localization.
+\end{enumerate}
+
+In essence, we turn mechanical deformation into a tuning knob for quantum localization. As we will see in the next chapter, certain strains bring forth a fascinating transition: the emergence of flat bands, sharply localized holes, and a ripple-induced quantum playground.
+
+
+\chapter{Rippletronics: Structural Sculpting of Electronic Bands}
+\label{chapter:3}
+
+\section{Conceptual Overview: Squeezing Bands Flat}
+\label{section:3.1}
+
+To understand how periodic ripples impact electronic properties, we begin by revisiting the central idea: applying in-plane compressive strain causes a monolayer to buckle out-of-plane, forming a spatially periodic ripple structure~\cite{fang_electronic_2018,stewart_atomistic_2013}. These geometric modulations produce alternating regions of tensile and compressive strain, effectively reshaping the local potential landscape at the atomic scale. 
+
+What happens next is subtle but profound. The periodic strain fields induced by rippling fold the Brillouin zone, hybridize electronic states, and—most importantly—trigger the emergence of nearly flat bands near the valence band edge.
+
+Unlike the flat bands seen in twisted bilayer graphene and other moiré systems, which arise from interlayer interference, the rippletronics route relies solely on intralayer strain modulation. That means we can flatten bands without stacking two layers or dialing in a magic twist angle. All it takes is a bit of compression—and the quantum landscape transforms.
+
+Because the ripple pattern is defined by the monolayer’s geometry, it is continuously tunable. The more we compress, the deeper the ripples become—and the more strongly the band structure is reshaped. This mechanical route to flat-band physics is not only conceptually elegant but also experimentally scalable, offering a new degree of freedom for designing quantum materials from the ground up.
+
+\section{Visualizing Rippled Structures}
+\label{section:3.2}
+
+We begin by visualizing how the monolayer geometry evolves under increasing uniaxial compression. As the strain rises from 0\% to 15\%, the initially flat MoS\textsubscript{2} sheet undergoes a buckling transition, forming a regular sinusoidal ripple pattern. This transition is clearly captured in both side-view heightmaps and 3D renderings of the relaxed atomic structure~\cite{li_buckling_2021,han_buckling_2021}.
+
+\begin{figure}[htp!]
+\centering
+
+% 0%
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/relaxation/2D/no-axes/1-relaxation-1x10-0.pdf}
+\includegraphics[width=\textwidth, trim={0 1.5cm 0 1.5cm}, clip]{Figures/MoS2/1x10/relaxation/3D/1-relaxation-1x10-0.pdf}
+\caption{$0\%$}
+\end{subfigure}
+\hfill
+% 3%
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/relaxation/2D/no-axes/4-relaxation-1x10-3.pdf}
+\includegraphics[width=\textwidth, trim={0 1.5cm 0 1.5cm}, clip]{Figures/MoS2/1x10/relaxation/3D/4-relaxation-1x10-3.pdf}
+\caption{$3\%$}
+\end{subfigure}
+
+\vspace{1em}
+
+% 7%
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/relaxation/2D/no-axes/8-relaxation-1x10-7.pdf}
+\includegraphics[width=\textwidth, trim={0 1.5cm 0 1.5cm}, clip]{Figures/MoS2/1x10/relaxation/3D/8-relaxation-1x10-7.pdf}
+\caption{$7\%$}
+\end{subfigure}
+\hfill
+% 8%
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/relaxation/2D/no-axes/9-relaxation-1x10-8.pdf}
+\includegraphics[width=\textwidth, trim={0 1.5cm 0 1.5cm}, clip]{Figures/MoS2/1x10/relaxation/3D/9-relaxation-1x10-8.pdf}
+\caption{$8\%$}
+\end{subfigure}
+
+\vspace{1em}
+
+% 10%
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/relaxation/2D/no-axes/11-relaxation-1x10-10.pdf}
+\includegraphics[width=\textwidth, trim={0 1.5cm 0 1.5cm}, clip]{Figures/MoS2/1x10/relaxation/3D/10-relaxation-1x10-10.pdf}
+\caption{$10\%$}
+\end{subfigure}
+\hfill
+% 15%
+\begin{subfigure}[b]{0.4\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/relaxation/2D/no-axes/16-relaxation-1x10-15.pdf}
+\includegraphics[width=\textwidth, trim={0 1.5cm 0 1.5cm}, clip]{Figures/MoS2/1x10/relaxation/3D/14-relaxation-1x10-15.pdf}
+\caption{$15\%$}
+\end{subfigure}
+
+\caption[MoS\textsubscript{2} Ripple Morphologies]{\textbf{MoS\textsubscript{2} Ripple Morphologies.} Side and 3D views of MoS\textsubscript{2} monolayers under increasing uniaxial compressive strain. Each pair corresponds to a specific strain value. The top image shows the 2D heightmap projection; the bottom shows the 3D atomic configuration. Buckling initiates near 7\% and intensifies through 15\%.}
+\label{fig:ripples_combined}
+\end{figure}
+
+To quantify this structural evolution, we extract three geometric parameters from each relaxed structure: the ripple amplitude $A$, wavelength $\lambda$, and maximum curvature $\kappa_{\mathrm{max}}$. Their trends with strain are shown in Figure~\ref{fig:geometry_scaling}.
+
+Amplitude increases gradually, while wavelength shortens slightly with strain. Together, these lead to a sharp nonlinear increase in curvature—consistent with the geometric scaling law for sinusoidal profiles:
+\begin{equation}
+\kappa_{\mathrm{max}} \approx \frac{A}{\lambda^2}.
+\end{equation}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=0.75\textwidth]{Figures/MoS2_A_Lambda_kappa.pdf}
+\caption[Scaling of Ripple Geometry in MoS\textsubscript{2}]{\textbf{Scaling of Ripple Geometry in MoS\textsubscript{2}.} Ripple amplitude $A$ (red), wavelength $\lambda$ (blue), and curvature $\kappa$ (green) extracted from relaxed atomic geometries. The curvature $\kappa$ rises faster due to its quadratic sensitivity to $\lambda$, consistent with the scaling $\kappa \sim A / \lambda^2$.}
+\label{fig:geometry_scaling}
+\end{figure}
+
+To extract $\kappa(y)$, we first obtain the $z$-coordinates of Mo atoms along the $y$-axis (the compression direction), then fit a smooth cubic spline $z(y)$. The local curvature is computed using the standard 2D curvature formula:
+\begin{equation}
+\kappa(y) = \frac{z''(y)}{\left[1 + (z'(y))^2\right]^{3/2}}.
+\end{equation}
+This yields the curvature profile across the ripple. Figure~\ref{fig:curvature_profile} illustrates this process at 10\% strain.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=0.75\textwidth]{Figures/MoS2/1x10/curvature/11-MoS2-1x10-strain10.pdf}
+\caption[Curvature Extraction from Mo Atom Profiles]{\textbf{Curvature Extraction from Mo Atom Profiles.} $z$-coordinates of Mo atoms at 10\% compression are interpolated with a cubic spline, from which local curvature $\kappa(y)$ is computed analytically.}
+\label{fig:curvature_profile}
+\end{figure}
+
+These ripple parameters—$A$, $\lambda$, and $\kappa$—form the geometric backbone of the rippletronics framework. As we will show in the next sections, they directly shape the strain-modulated potential landscape and govern the electronic behavior of the system. By compressing a 2D crystal, we don't just deform it—we compose a new quantum topography.
+
+\section{Electronic Structure Under Compression}
+\label{section:3.3}
+
+Having visualized the geometric deformation of our monolayers, we now explore the electronic consequences of ripple formation. As the monolayer buckles under compression, its periodic curvature modulates the local potential landscape—creating a strain superlattice that directly reshapes the band structure. This coupling between geometry and electronic structure is the engine behind what we call ``rippletronics.''
+
+Imagine taking a perfectly flat sheet of paper and gently compressing it from the sides. At first, nothing dramatic happens—the sheet simply contracts uniformly. But beyond a critical threshold, it buckles into a wave-like form. At the atomic scale, this simple mechanical transformation triggers an equally remarkable shift in the electronic structure. Just as mountains and valleys redirect water, atomic-scale ripples guide and confine electronic motion.
+
+Mathematically, this link emerges through the position-dependent strain tensor $\varepsilon_{ij}(\mathbf{r})$, which modifies the electronic Hamiltonian via deformation potentials:
+\begin{equation}
+\mathcal{H}(\mathbf{r}) = \mathcal{H}_0 + \sum_{ij} D_{ij} \varepsilon_{ij}(\mathbf{r}),
+\end{equation}
+where $\mathcal{H}_0$ is the unperturbed Mathematically, this link emerges through the position-dependent strain tensor $\varepsilon_{ij}(\mathbf{r})$, which modifies the electronic Hamiltonian via deformation potentials:
+\begin{equation}
+\mathcal{H}(\mathbf{r}) = \mathcal{H}_0 + \sum_{ij} D_{ij} \varepsilon_{ij}(\mathbf{r}),
+\end{equation}
+where $\mathcal{H}_0$ is the unperturbed Hamiltonian and $D_{ij}$ are components of the deformation potential tensor (found by fitting the shifts in band edges under uniform strain). It's as if a rippled perturbation is applied to an otherwise flat quantum landscape---electrons must now navigate a bumpy terrain.
+
+\subsection{Band Flattening and Dispersion Changes}
+\label{subsection:3.3.1}
+
+To trace these effects systematically, we computed the band structures of MoS\textsubscript{2} in a $1 \times 10$ supercell across increasing compression levels. The evolution is shown in Figure~\ref{fig:band_flattening}. At 0\% compression, the monolayer retains its characteristic direct band gap at the $\mathrm{K}$ point. As compression increases and ripples form, the valence band undergoes a striking transformation.
+
+Under compression, the monolayer's buckling instabilities spawn ripples that rewire the band structure—shifting $E_{\mathrm{K}}$ downward and lifting $E_{\Gamma}}$ upward. Notably, $E_\Gamma$ sits between a nearly flat segment along $\overline{\Gamma\mathrm{X}}$ and a perfectly flat band along $\overline{\Gamma\mathrm{Y}}$. As ripple amplitude grows, a critical point is reached where $E_{\Gamma}$ overtakes $E_{\mathrm{K}}$, relocating the valence-band maximum to the $\Gamma$ point. The result is an indirect gap, the birth of heavy holes, and a fundamentally reconfigured electronic identity.
+
+To clearly demonstrate the extent and symmetry of this flat region around $\Gamma$, we additionally compute the band structure using both (i) periodic boundary conditions and (ii) an alternative $k$-path: $\mathrm{X} \rightarrow \mathrm{S} \rightarrow \mathrm{Y} \rightarrow \Gamma \rightarrow \mathrm{X}$. This expanded view captures flat segments that might otherwise be hidden due to path-dependent representations of Bloch states.
+
+\begin{figure}[htp]
+\centering
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/nonperiodic/1-bands-1x10-0.pdf}
+\caption{$0\%$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/nonperiodic/4-bands-1x10-3.pdf}
+\caption{$3\%$}
+\end{subfigure}
+
+\vspace{1em}
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/nonperiodic/8-bands-1x10-7.pdf}
+\caption{$7\%$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/nonperiodic/9-bands-1x10-8.pdf}
+\caption{$8\%$}
+\end{subfigure}
+
+\vspace{1em}
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/nonperiodic/11-bands-1x10-10.pdf}
+\caption{$10\%$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/nonperiodic/16-bands-1x10-15.pdf}
+\caption{$15\%$}
+\end{subfigure}
+
+\caption[Band Flattening Under Strain in MoS\textsubscript{2}]{\textbf{Band Flattening Under Strain in MoS\textsubscript{2}.} Electronic band structures of the $1 \times 10$ supercell at different compressive strain levels. Valence band flattening becomes prominent between 7–10\% strain, marking the transition from a direct to an indirect band gap.}
+\label{fig:band_flattening}
+\end{figure}
+\begin{figure}[htp]
+\centering
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/periodic/01-bands-periodic-1x10-0.pdf}
+\caption{$0\%$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/X_S_Y_G_X/01-bands-X_S_Y_G_X-1x10-0.pdf}
+\caption{$0\%$}
+\end{subfigure}
+
+\vspace{1em}
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/periodic/11-bands-periodic-1x10-10.pdf}
+\caption{$10\%$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/X_S_Y_G_X/11-bands-X_S_Y_G_X-1x10-10.pdf}
+\caption{$10\%$}
+\end{subfigure}
+
+\vspace{1em}
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/periodic/16-bands-periodic-1x10-15.pdf}
+\caption{$15\%$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/bands/X_S_Y_G_X/16-bands-X_S_Y_G_X-1x10-15.pdf}
+\caption{$15\%$}
+\end{subfigure}
+
+\caption[Symmetry-Resolved Band Flattening in MoS\textsubscript{2}]{\textbf{Symmetry-Resolved Band Flattening in MoS\textsubscript{2}.} Band structures at 0\%, 10\%, and 15\% compressive strain are shown using both the standard periodic path (left column) and the expanded symmetry path $\mathrm{X} \rightarrow \mathrm{S} \rightarrow \mathrm{Y} \rightarrow \Gamma \rightarrow \mathrm{X}$ (right column). This view reveals additional flat-band features near $\Gamma$ that may be obscured in conventional representations.}
+\label{fig:band_flattening_new}
+\end{figure}
+
+
+This flattening reduces the group velocity of charge carriers and foreshadows their localization in real space—a connection we explore soom.
+
+
+
+\subsection{Effective Mass and Transport: When Holes Diet, They Gain Weight}
+\label{subsection:3.3.3}
+
+As the valence band flattens, its carriers grow sluggish. This behavior is captured quantitatively by the effective mass tensor \( m^*_{ij} \), which characterizes how easily electrons or holes accelerate under an applied field. In band theory, it is given by:
+
+\begin{equation}
+\left(m^{*-1}\right)_{ij} = \frac{1}{\hbar^2} \left. \frac{\partial^2 E(\mathbf{k})}{\partial k_i \, \partial k_j} \right|_{\mathbf{k}_0},
+\end{equation}
+
+where \( \mathbf{k}_0 \) is the location of the band extremum. In practice, we extract \( m^*_{ij} \) by fitting a quadratic function to the band edge within a \( \pm 0.1~\text{\AA}^{-1} \) window along each principal direction.
+
+Physically, the curvature of the band determines how fast a particle can move: steep curvature implies a light mass and high mobility, while flat curvature leads to massive, slow carriers. The analogy is intuitive—electrons in flat bands are like hikers wading through mud.
+
+Figure~\ref{fig:meff_MoS2} shows the evolution of the effective mass in MoS\textsubscript{2} under compression. The left panel tracks the conduction band effective mass (\( m^*_{e,xx} \), \( m^*_{e,yy} \)), which changes modestly with strain. In contrast, the right panel reveals a dramatic increase in the hole effective mass (\( m^*_{h,xx} \), \( m^*_{h,yy} \)) beyond 7–8\% compression—coinciding with the flattening of the valence band and its relocation from K to $\Gamma$.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\textwidth]{Figures/MoS2_effective_masses_1x10.pdf}
+\caption[Effective Mass Evolution in MoS\textsubscript{2}]{\textbf{Effective Mass Evolution in MoS\textsubscript{2}.} Left: electron effective masses along \( x \) and \( y \). Right: hole effective masses. After 8\% compression, hole masses grow sharply, especially along \( y \), reflecting strong band flattening and localization.}
+\label{fig:meff_MoS2}
+\end{figure}
+
+To pinpoint the transition, we isolate \( m^*_{h,yy} \) at key $k$-points: the original VBM at K, the new VBM near $\Gamma$, and the highest occupied state across the Brillouin zone (VBM). As shown in Figure~\ref{fig:mh_yy_VBM}, the mass at K remains light, but \( m^*_{h,yy}(\Gamma) \) increases steadily, eventually overtaking K around 9\% strain. After this point, the VBM lies within a flat segment near $\Gamma$, and the corresponding hole effective mass diverges—signaling the onset of heavy, localized holes.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=0.8\textwidth]{Figures/MoS2_1x10_mhyy_comparison.pdf}
+\caption[Hole Effective Mass at Key $k$-Points]{\textbf{Hole Effective Mass at Key $k$-Points.} The \( yy \)-component of the hole effective mass is shown for the VBM (red), $\Gamma$ (orange), and K (black stars). Beyond 9\% strain, the VBM shifts to $\Gamma$, and \( m^*_{h,yy} \) increases steeply as the band flattens.}
+\label{fig:mh_yy_VBM}
+\end{figure}
+
+This dramatic mass enhancement has direct consequences for carrier mobility. Within the Drude model,
+\begin{equation}
+\mu = \frac{e \tau}{m^*},
+\end{equation}
+where \( \tau \) is the scattering time. Assuming \( \tau \) remains roughly constant, a 10× increase in \( m^* \) leads to a 10× drop in mobility. Effectively, holes freeze in place as their bands flatten—a hallmark of localization.
+
+Compression also introduces pronounced anisotropy. Since strain is applied along \( y \), the ripple curvature—and hence the band flattening—is strongest in that direction. As a result, \( m^*_{h,yy} \gg m^*_{h,xx} \) at high strain. The anisotropy ratio \( m^*_{h,yy} / m^*_{h,xx} \) exceeds 3 after 10\% compression, implying that holes can move more freely across ripples than along them. This creates a directionally selective transport channel—essentially a nanoscale one-way street engineered via geometry.
+
+In summary, flattening of the valence band leads to:
+
+\begin{itemize}
+  \item Divergence of hole effective mass near $\Gamma$
+  \item Strong suppression of hole mobility
+  \item Emergent anisotropy in transport
+\end{itemize}
+
+These effects are signatures of a system entering the flat-band regime—where geometry reshapes not only the band structure, but the very inertia of electronic carriers.
+
+
+
+\subsection{Localization in Real Space: Electron Pockets and Puddles}
+\label{subsection:3.3.2}
+
+The real-space consequence of band flattening is carrier localization---a phenomenon rooted in the Heisenberg uncertainty principle:
+\begin{equation}
+\Delta x \cdot \Delta p \geq \frac{\hbar}{2}.
+\end{equation}
+As the band flattens in momentum space, the corresponding spread in momentum $\Delta p$ narrows, forcing $\Delta x$ to grow smaller. In physical terms: a flatter band implies heavier, slower-moving carriers that become increasingly confined in space.
+
+Figure~\ref{fig:ldos_strain_series} shows the local density of states (LDOS) for the conduction band minimum (CBM, top panels) and valence band maximum (VBM, bottom panels) in MoS\textsubscript{2}, projected onto the $yz$-plane at various compressions. At low strain (0--3\%), both CBM and VBM states remain delocalized, spanning the entire ripple. But beginning around 7--8\% compression, the VBM states begin to concentrate at the crests and troughs of the ripple geometry. These regions of maximal curvature act as quantum wells, trapping holes into sharply localized pockets.
+
+\begin{figure}[htp]
+\centering
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/LDOS/LDOS_CB_VB_1x10_0.png}
+\caption{$0\%$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/LDOS/LDOS_CB_VB_1x10_3.png}
+\caption{$3\%$}
+\end{subfigure}
+
+\vspace{1em}
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/LDOS/LDOS_CB_VB_1x10_7.png}
+\caption{$7\%$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/LDOS/LDOS_CB_VB_1x10_8.png}
+\caption{$8\%$}
+\end{subfigure}
+
+\vspace{1em}
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/LDOS/LDOS_CB_VB_1x10_10.png}
+\caption{$10\%$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/LDOS/LDOS_CB_VB_1x10_15.png}
+\caption{$15\%$}
+\end{subfigure}
+
+\caption[LDOS Under Increasing Strain in MoS\textsubscript{2}]{\textbf{LDOS Under Increasing Strain in MoS\textsubscript{2}.} Cross-sections of the local density of states for conduction (top) and valence (bottom) band edges, projected onto the $yz$-plane. At low strain, states are delocalized. As compression increases, hole states become trapped at ripple extrema, forming curvature-defined quantum wells.}
+\label{fig:ldos_strain_series}
+\end{figure}
+
+This localization is not just geometric---it reflects a change in the orbital character of the wavefunctions. As shown in real-space wavefunction projections (Figure~\ref{fig:wavefn}), the localized VBM states derive primarily from Mo 4$d_{z^2}$ orbitals and S 3$p$ orbitals located on the tensile side of the ripple (outer bend). These orbitals form tightly bound states at high curvature regions, effectively forming a chain of laterally modulated quantum wells. In contrast, CBM states remain largely delocalized and maintain uniform spread across the ripple, even at high compression. This electron--hole asymmetry gives rise to spontaneous spatial charge separation: trapped holes at ripple extrema and mobile electrons between them.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=1\textwidth]{Figures/MoS2/1x10/LDOS/LDOS_CB_VB_1x10_15.png}
+\caption[Zoomed Image of MoS$_2$ LDOS Showing Orbitals Hybridization]{\textbf{Orbital Hybdrization in MoS$_2$.} Probability densities for the CBM and VBM compression 15\%, illustrating how hole states localize at regions of maximum curvature while electron states remain extended. VBM states exhibit strong contributions from Mo $d_{z^2}$ and S $p$ orbitals on the tensile side of the ripple.}
+\label{fig:wavefn}
+\end{figure}
+
+The emergence of these localized states coincides with the valence band maximum shifting from K to $\Gamma$, where the band curvature flattens dramatically. This is accompanied by a sharp rise in the hole effective mass, particularly along the compression direction ($m_{h,yy}^*$), as discussed in Section~\ref{subsection:3.3.3}. Beyond 9\% strain, the VBM resides within the flat segment near $\Gamma$, giving rise to nearly dispersionless hole states and strong real-space confinement.
+
+In essence, the ripple turns the TMD monolayer into a natural lateral heterostructure: regions of high curvature act as quantum wells, while flatter inflection zones serve as weakly confining barriers. Without any chemical modification or interlayer stacking, geometry alone reconfigures the quantum transport landscape---modulating carrier localization and setting the stage for strongly correlated states.
+
+
+\section{Comparative Analysis of Compression-Dependent Properties Across TMD Compositions}
+\label{section:3.4}
+
+So far, we've focused our attention on MoS\textsubscript{2}, but rippletronics is no one-material show. Other monolayer TMDs—particularly MoSe\textsubscript{2}, WS\textsubscript{2}, and WSe\textsubscript{2}—undergo analogous curvature-induced electronic transformations, albeit with unique mechanical and electronic fingerprints. Each material exhibits a characteristic compression-induced electronic evolution.
+
+To compare their behavior systematically, we extract four key metrics across a compression range of 5\% to 20\%:
+
+\begin{enumerate}
+  \item Band gap \( E_g \)
+  \item Ripple amplitude $A$
+  \item Ripple wavelength $\lambda$
+  \item Maximum curvature \( \kappa_{\mathrm{max}} \)
+\end{enumerate}
+
+Figure~\ref{fig:tmd_summary} shows how these quantities evolve with compression. Several trends immediately stand out: band gaps follow a clear hierarchy where sulfides maintain higher values than selenides, and tungsten-containing compounds exhibit larger gaps than their molybdenum analogs, with WS\textsubscript{2} showing the highest values throughout; ripple amplitude increases steadily with compression, with selenides reaching larger values than sulfides and tungsten-containing compounds showing higher amplitudes than their molybdenum counterparts; wavelength contracts uniformly, with tungsten-containing TMDs maintaining consistently shorter wavelengths than molybdenum-containing ones and sulfides displaying larger wavelengths than selenides; and maximum curvature rises nonlinearly, with selenides achieving the highest values and tungsten-containing compounds exhibiting greater curvature than their molybdenum analogs at large compression. The net result is a tunable palette of geometric and electronic responses.\ The systematic trends across metal and chalcogen species are summarized in Table~\ref{tab:tmd_trends}.
+
+
+\begin{table}[h]
+\centering
+\caption{Systematic trends in compression-dependent properties across TMD families}
+\label{tab:tmd_trends}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Property} & \textbf{Metal Effect} & \textbf{Chalcogen Effect} & \textbf{Overall Ranking} \\
+& (W vs Mo) & (S vs Se) & (Highest $\rightarrow$ Lowest) \\
+\midrule
+Band gap ($E_g$) & W $>$ Mo & S $>$ Se & WS\textsubscript{2} $>$ MoS\textsubscript{2} $>$ WSe\textsubscript{2} $>$ MoSe\textsubscript{2} \\
+Amplitude ($A$) & W $>$ Mo & Se $>$ S & WSe\textsubscript{2} $>$ MoSe\textsubscript{2} $>$ WS\textsubscript{2} $>$ MoS\textsubscript{2} \\
+Wavelength ($\lambda$) & W $<$ Mo & S $>$ Se & MoS\textsubscript{2} $>$ MoSe\textsubscript{2} $>$ WS\textsubscript{2} $>$ WSe\textsubscript{2} \\
+Curvature ($\kappa$) & W $>$ Mo & Se $>$ S & WSe\textsubscript{2} $>$ MoSe\textsubscript{2} $>$ WS\textsubscript{2} $>$ MoS\textsubscript{2} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=1\textwidth]{Figures/TMDs_Properties.pdf}
+\caption[Compression-Dependent Properties Across TMDs]{\textbf{Compression-Dependent Properties Across TMDs.} \textbf{Top left:} Band gap $E_g$ decreases with increasing compression. \textbf{Top right:} Ripple amplitude $A$ grows steadily with compression. \textbf{Bottom left:} Wavelength $\lambda$ contracts under compression. \textbf{Bottom right:} Curvature $\kappa$ rises nonlinearly with compression. See Table~\ref{tab:tmd_trends} for systematic trends across TMD families.}
+\label{fig:tmd_summary}
+\end{figure}
+
+To model the compression-dependent evolution of these properties quantitatively, we performed systematic fits to the extracted data. Specifically, we fitted the compression dependence of $E_g$, $A$, and $\lambda$ to quadratic functions:
+\begin{equation}
+f(C) = a_2 C^2 + a_1 C + a_0,
+\end{equation}
+and modeled the curvature $\kappa(C)$ using a power-law relationship:
+\begin{equation}
+\kappa(C) = \mu C^\nu + \omega,
+\end{equation}
+where \( C \) is the applied compression percentage. The extracted fit parameters are listed in Table~\ref{tab:tmd_fits}. These analytical expressions enable prediction of material properties at arbitrary compression levels within the studied range (5-20\%), facilitating device design without exhaustive computational sampling.
+
+\begin{table}[ht]
+\centering
+\caption[Compression-Fit Parameters for TMDs]{\textbf{Compression-Fit Parameters for TMDs.} Quadratic fits are used for $E_g$, $A$, and $\lambda$, while $\kappa(C)$ is modeled using a power law. Fit coefficients capture each material's curvature sensitivity and mechanical compliance.}
+\label{tab:tmd_fits}
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Property} & \textbf{Parameter} & \textbf{MoS\textsubscript{2}} & \textbf{MoSe\textsubscript{2}} & \textbf{WS\textsubscript{2}} & \textbf{WSe\textsubscript{2}} \\
+\midrule
+\multirow{3}{*}{$E_g$ [eV]}
+& $a_2$ & $-5.60\!\times\!10^{-4}$ & $-7.07\!\times\!10^{-4}$ & $-4.88\!\times\!10^{-4}$ & $-1.04\!\times\!10^{-3}$ \\
+& $a_1$ & $-0.0132$ & $-0.0080$ & $-0.0127$ & $-0.0034$ \\
+& $a_0$ & $1.838$ & $1.544$ & $1.965$ & $1.698$ \\
+\midrule
+\multirow{3}{*}{$A$ [\AA]}
+& $a_2$ & $-0.0169$ & $-0.0131$ & $-0.0131$ & $-0.0089$ \\
+& $a_1$ & $0.953$ & $0.744$ & $0.797$ & $0.643$ \\
+& $a_0$ & $5.49$ & $10.17$ & $7.81$ & $11.54$ \\
+\midrule
+\multirow{3}{*}{$\lambda$ [\AA]}
+& $a_2$ & $0$ & $4.42\!\times\!10^{-3}$ & $1.20\!\times\!10^{-3}$ & $3.94\!\times\!10^{-4}$ \\
+& $a_1$ & $-0.549$ & $-0.640$ & $-0.586$ & $-0.587$ \\
+& $a_0$ & $54.86$ & $55.07$ & $54.69$ & $54.36$ \\
+\midrule
+\multirow{3}{*}{$\kappa_{\text{max}}$ [1/\AA]}
+& $\mu$   & $0.0069$ & $0.0075$ & $0.0052$ & $0.0032$ \\
+& $\nu$   & $1.021$  & $0.976$  & $1.100$  & $1.257$ \\
+& $\omega$ & $0.036$ & $0.063$  & $0.054$  & $0.084$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+To quantitatively characterize band flattening, we employ several complementary metrics:
+
+\begin{enumerate}
+  \item \textbf{Flat bandwidth} \( W_{\mathrm{flat}} \): The energy range (in meV) over which the valence band remains nearly flat, computed as:
+  \begin{equation}
+  W_{\mathrm{flat}} = \max_{k\in\text{flat}}E_{\text{VB1}}(k) - \min_{k\in\text{flat}}E_{\text{VB1}}(k)
+  \end{equation}
+  
+  \item \textbf{Flatness ratio} \( \alpha_{\mathrm{flat}} \): The fraction of the Brillouin zone where band curvature is negligible:
+  \begin{equation}
+  \alpha_{\mathrm{flat}} = \frac{\Delta k_{\mathrm{flat}}}{\Delta k_{\mathrm{total}}} \times 100\%
+  \end{equation}
+  where flat regions satisfy $|d^2E/dk^2| < 0.05 \times \max|d^2E/dk^2|$.
+
+  \item \textbf{IPR proxy}: A figure of merit (FOM) derived from band structure properties to estimate real-space localization without computing wavefunctions:
+  \begin{equation}
+  \text{IPR}_{\text{proxy}} = \frac{1}{\Delta k_{\mathrm{flat}} \times W_{\mathrm{flat}}}
+  \end{equation}
+  This quantity increases as bands become flatter (smaller $W_{\mathrm{flat}}$) and more localized in $k$-space (smaller $\Delta k_{\mathrm{flat}}$), serving as a computationally efficient proxy for the true Inverse Participation Ratio.
+\end{enumerate}
+
+The evolution of valence band structure under compression (Figure~\ref{fig:tmds_valence_bands}) reveals a fundamental distinction between sulfide and selenide TMDs. All materials exhibit complete band flattening along the transverse direction ($\Gamma \to \mathrm{Y}$, parallel to compression), creating one-dimensional confinement. However, the location and behavior of the valence band maximum (VBM) differs dramatically between the two families.
+
+For sulfides (MoS\textsubscript{2} and WS\textsubscript{2}), the VBM initially resides in the perfectly flat $\Gamma$Y region at the onset of localization. MoS\textsubscript{2} shows onset between 8-9\% compression with the VBM remaining along $\Gamma$Y until 10\%, while WS\textsubscript{2} exhibits earlier onset at 7-8\% with the VBM staying in $\Gamma$Y over a wider range (8-13\%). Beyond these compressions, the VBM jumps to the longitudinal $\Gamma$X direction, where the bands are less flat but still show reasonable confinement. Notably, WS\textsubscript{2} maintains relatively flat bands along $\Gamma$X up to 20\% compression with minimal curvature, while MoS\textsubscript{2} shows increasing curvature beyond 16\% that progressively delocalizes carriers.
+
+Selenides present a strikingly different picture. Neither MoSe\textsubscript{2} nor WSe\textsubscript{2} ever have their VBM in the perfectly flat $\Gamma$Y region. Instead, the VBM always resides along the longitudinal $\Gamma$X direction, which inherently exhibits some dispersion even at the onset of localization. MoSe\textsubscript{2} shows onset at 9-10\% compression, while WSe\textsubscript{2} begins at 10-11\%, both significantly later than their sulfide counterparts. The $\Gamma$X path in selenides is never truly flat, maintaining small but persistent dispersion throughout the compression range. This dispersion increases progressively with compression, creating the characteristic M-shaped valence band profile and limiting the optimal localization range to 10-14\% for MoSe\textsubscript{2} and 10-15\% for WSe\textsubscript{2}.
+
+The density of states evolution (Figure~\ref{fig:tmds_DOS}) follows a clear hierarchy: MoSe\textsubscript{2} > WSe\textsubscript{2} > MoS\textsubscript{2} > WS\textsubscript{2}. Selenides consistently exhibit higher DOS peaks than sulfides, and within each chalcogen family, molybdenum compounds show greater enhancement than tungsten compounds. This hierarchy reflects the number of available electronic states in the flat-band regime, with MoSe\textsubscript{2} providing the highest density of states for potential many-body interactions.
+
+The flatness ratio (Figure~\ref{fig:tmd_alpha}) converges to similar values around 14-15\% for all materials, while the flat bandwidth evolution (Figure~\ref{fig:tmd_Wflat}) shows material-specific trajectories. These metrics, combined with the VBM location analysis, reveal that the apparent similarity in $\alpha_{\mathrm{flat}}$ masks fundamental differences in the nature of localization between sulfides and selenides.
+
+\begin{figure}[htp]
+\centering
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/Bands-MoS2-strain-trend.pdf}
+\caption{MoS$_2$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoSe2/1x10/Bands-MoSe2-strain-trend.pdf}
+\caption{MoSe$_2$}
+\end{subfigure}
+
+\vspace{1em}
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/WS2/1x10/Bands-WS2-strain-trend.pdf}
+\caption{WS$_2$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/WSe2/1x10/Bands-WSe2-strain-trend.pdf}
+\caption{WSe$_2$}
+\end{subfigure}
+
+\caption[Evolution of TMDs Valence Bands With Compression]{\textbf{Valence Bands Under Increasing Compression in TMDs.} All materials show complete flattening along $\Gamma \to \mathrm{Y}$. Sulfides (a,c) have VBM initially in the flat $\Gamma$Y region, while selenides (b,d) always have VBM along the partially dispersive $\Gamma$X direction.}
+\label{fig:tmds_valence_bands}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoS2/1x10/DOS-MoS2-trend.pdf}
+\caption{MoS$_2$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/MoSe2/1x10/DOS-MoSe2-trend.pdf}
+\caption{MoSe$_2$}
+\end{subfigure}
+
+\vspace{1em}
+
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/WS2/1x10/DOS-WS2-trend.pdf}
+\caption{WS$_2$}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.48\textwidth}
+\includegraphics[width=\textwidth]{Figures/WSe2/1x10/DOS-WSe2-trend.pdf}
+\caption{WSe$_2$}
+\end{subfigure}
+
+\caption[Evolution of TMDs DOS With Compression]{\textbf{DOS Under Increasing Compression in TMDs.} DOS enhancement follows the hierarchy: MoSe$_2$ > WSe$_2$ > MoS$_2$ > WS$_2$.}
+\label{fig:tmds_DOS}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\textwidth]{Figures/flatness_ratio_all_materials.pdf}
+\caption[Flatness Ratio Across Compressed TMDs]{\textbf{Flatness Ratio Across Compressed TMDs.} All TMDs converge to similar values despite fundamentally different localization mechanisms.}
+\label{fig:tmd_alpha}
+\end{figure}
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\textwidth]{Figures/W_flat_all_materials.pdf}
+\caption[Flat Bandwidth Evolution in TMDs]{\textbf{Flat Bandwidth Evolution in TMDs.} Material-specific trajectories reflect the different nature of localization in sulfides versus selenides.}
+\label{fig:tmd_Wflat}
+\end{figure}
+
+These observations reveal fundamentally different localization mechanisms and optimal operating regimes for each material family. Table~\ref{tab:tmd_flatband_quantitative} summarizes the key characteristics and application guidelines. WS\textsubscript{2} emerges as the champion for sustained localization, maintaining confinement over the widest compression range (7-20\%) with minimal band curvature. For early-response applications, both sulfides excel due to their low onset thresholds and initial VBM placement in the perfectly flat $\Gamma$Y region. Selenides, despite never achieving true zero-dispersion states, offer the highest DOS enhancement, making them suitable for applications where a high density of states near the Fermi level is more important than perfect flatness.
+
+\begin{table}[h]
+\centering
+\caption{Comprehensive localization characteristics and application guide}
+\label{tab:tmd_flatband_quantitative}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Material} & \textbf{Onset} & \textbf{Optimal} & \textbf{VBM Location} & \textbf{DOS} & \textbf{Best} \\
+& \textbf{Range} & \textbf{Range} & \textbf{Evolution} & \textbf{Rank} & \textbf{Application} \\
+\midrule
+MoS\textsubscript{2} & 8-9\% & 8-15\% & $\Gamma$Y$\to$$\Gamma$X & 3rd & Early sensing \\
+WS\textsubscript{2} & 7-8\% & 7-20\% & $\Gamma$Y$\to$$\Gamma$X & 4th & Sustained localization \\
+MoSe\textsubscript{2} & 9-10\% & 10-14\% & Always $\Gamma$X & 1st & High DOS applications \\
+WSe\textsubscript{2} & 10-11\% & 10-15\% & Always $\Gamma$X & 2nd & Moderate DOS/flatness \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The fundamental distinction between sulfides and selenides lies not just in their onset compression or degree of flattening, but in the very nature of their electronic confinement. Sulfides achieve true flat-band states with their VBM in perfectly dispersionless regions, while selenides operate in a regime of strong but imperfect confinement with inherent residual dispersion. This dichotomy suggests different optimal applications: sulfides for quantum devices requiring genuine zero-dispersion states, and selenides for applications leveraging high density of states and strong but not perfect confinement.
+
+In the following subsection, we explore the microscopic origins of these contrasting behaviors and their implications for device design.
+
+\section{Curvature Effects and Scaling: The Size-Matters Principle}
+\label{section:3.6}
+
+Curvature is the engine of rippletronics, but not all ripples are created equal. Even when two monolayers experience the same level of compressive strain, they can differ dramatically in how strongly they bend—depending on the size of the supercell and the wavelength of the resulting ripple.
+
+To isolate this geometric scaling effect, we compare two MoS\textsubscript{2} supercells under identical compression: a shorter $1 \times 10$ cell and a longer $1 \times 20$ cell. The only difference is ripple wavelength. The resulting contrast in curvature, band gap, and effective mass reveals a striking message: when it comes to quantum confinement, shorter is sharper.
+
+Why? Because for a sinusoidal ripple with amplitude $A$ and wavelength $\lambda$, the maximum curvature \( \kappa_{\mathrm{max}} \) scales as:
+
+\begin{equation}
+\kappa_{\mathrm{max}} \sim \frac{A}{\lambda^2}.
+\end{equation}
+
+So halving the ripple wavelength (with comparable amplitude) leads to a fourfold increase in curvature. This higher curvature enhances the local deformation potential, deepens the ripple-induced quantum wells, and flattens the valence band more aggressively.\ In our case, the $1 \times 20$ ripple develops twice the amplitude of the $1 \times 10$ ripple ($A_2 = 2A_1$), while having twice the wavelength ($\lambda_2 = 2\lambda_1$). Computing the curvature ratio: \begin{equation} \frac{\kappa_1}{\kappa_2} = \frac{A_1/\lambda_1^2}{A_2/\lambda_2^2} = \frac{A_1/\lambda_1^2}{2A_1/(2\lambda_1)^2} = \frac{A_1/\lambda_1^2}{A_1/2\lambda_1^2} = 2. \end{equation}
+Thus, the $1 \times 10$ ripple exhibits twice the curvature of the $1 \times 20$ ripple, despite having half the amplitude. This twofold enhancement in curvature overwhelms the amplitude disadvantage, leading to stronger quantum confinement and more dramatic electronic modulation.
+
+Figure~\ref{fig:supercell_scaling} demonstrates this wavelength dominance. The band gap decreases more rapidly with compression for the shorter wavelength $1 \times 10$ structure, dropping from approximately 1.75 eV to 1.35 eV by 20\% compression, while the $1 \times 20$ structure shows a more gradual decline from 1.75 eV to 1.65 eV. This enhanced gap modulation correlates directly with the maximum curvature evolution: the $1 \times 10$ structure achieves a curvature of 0.18 \AA$^{-1}$ by 20\% compression, more than double the 0.08 \AA$^{-1}$ reached by the $1 \times 20$ cell.
+
+The differential evolution of these parameters explains the distinct electronic behaviors. The $1 \times 10$ structure shows a steeper increase in curvature with compression, while its wavelength decreases more gradually compared to the $1 \times 20$ cell. Conversely, while the $1 \times 20$ structure develops larger amplitude (reaching ~35 \AA vs ~18 \AA for the $1 \times 10$), this amplitude advantage cannot compensate for its longer wavelength in terms of curvature generation.\ Most importantly, examining the band structures (see Appendix A), the onset of localization occurs at 8-9\% compression for the $1 \times 10$ structure, whereas the $1 \times 20$ structure requires 11-12\% compression to achieve the same transition. This confirms that higher curvature directly correlates with earlier onset of quantum confinement—shorter wavelengths require less compression to achieve localization.
+
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\textwidth]{Figures/MoS2_Supercells_Properties.pdf}
+\caption[Supercell Scaling Comparison for MoS\textsubscript{2}]{\textbf{Supercell Scaling Comparison for MoS\textsubscript{2}.} Comparison of band gap, ripple amplitude, maximum curvature, and wavelength at varying compression for $1 \times 10$ (shorter wavelength) and $1 \times 20$ (longer wavelength) supercells. The $1 \times 10$ ripple produces greater curvature and stronger band gap reduction despite having smaller amplitude. This demonstrates that wavelength reduction has a more profound impact on electronic properties than amplitude increase.}
+\label{fig:supercell_scaling}
+\end{figure}
+
+The impact on electronic properties is even more dramatic, as shown in Figure~\ref{fig:effective_masses_supercells}. For the $1 \times 10$ structure, the hole effective mass undergoes a sudden, order-of-magnitude increase between 7-8\% compression, jumping from near-zero to approximately -10 $m_0$ in the $xx$ direction and -13 $m_0$ in the $yy$ direction. This abrupt change coincides with the direct-to-indirect band transition, where the VBM shifts to the $\Gamma$ point and electrons become strongly localized in the quantum wells. The $1 \times 20$ structure exhibits identical behavior but delayed to 12-13\% compression, demonstrating how shorter wavelengths—despite having smaller amplitudes—accelerate the onset of quantum confinement through their enhanced curvature. This 5\% shift in the critical transition point has profound implications for strain engineering: shorter-wavelength ripples can achieve the same electronic modulation at significantly lower applied strains.
+
+Notably, the effective mass anisotropy persists throughout the transition: holes are consistently more massive along the $yy$ direction (parallel to compression) than the $xx$ direction, creating one-dimensional transport characteristics. This anisotropy arises from the complete flattening of bands along the transverse direction while maintaining some dispersion longitudinally. Table~\ref{tab:supercell_comparison} quantifies these differences at 10\% compression—a point where the $1 \times 10$ structure has undergone the direct-indirect transition while the $1 \times 20$ structure remains direct.
+
+To summarize these differences, Table~\ref{tab:supercell_comparison} summarizes the key properties illustrating the curvature effect on localization.
+
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=\textwidth]{Figures/MoS2_effective_masses_grid.pdf}
+\caption[Effective Mass Dependence on Curvature in MoS\textsubscript{2}]{\textbf{Effective Masses and Their Dependence on Curvature.} Evolution of electron (CBM) and hole (VBM) effective masses for $1 \times 10$ (left) and $1 \times 20$ (right) supercells. The dramatic increase in hole mass at the direct-indirect transition occurs at 7-8\% for the shorter wavelength and 12-13\% for the longer wavelength structure.}
+\label{fig:effective_masses_supercells}
+\end{figure}
+
+
+\begin{table}[ht]
+\centering
+\caption[\texorpdfstring{$1 \times 10$ vs.\ $1 \times 20$ MoS\textsubscript{2} Supercells}{Comparison of MoS2 Supercells}]
+{\textbf{Comparison of $1 \times 10$ and $1 \times 20$ MoS\textsubscript{2} Supercells at 10\% Compression.} Short-wavelength ripples in the smaller supercell exhibit higher curvature and have already undergone the localization transition, while long-wavelength structures in the larger supercell remain in the delocalized regime.}
+\label{tab:supercell_comparison}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Property} & \textbf{$1 \times 10$} & \textbf{$1 \times 20$} \\
+\midrule
+Amplitude & Low & High \\
+Wavelength & Short & Long \\
+Curvature & High & Low \\
+Band Character & Indirect & Indirect \\
+Onset of Localization & Early & Late \\
+Localization Strength & Strong & Strong \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\subsection*{Summary: Mechanical Design of Quantum Landscapes}
+
+Chapter 3 has established rippletronics as a new paradigm for engineering quantum materials through mechanical deformation. We have shown how simple uniaxial compression transforms a flat TMD monolayer into a periodic ripple structure, creating a strain superlattice that fundamentally reshapes the electronic landscape, all without chemical modification or interlayer assembly.
+
+Our systematic exploration revealed three core principles:
+\begin{enumerate}
+  \item \textbf{Geometric control of bands:} As compression increases, the ripple curvature $\kappa$ drives electronic localization. The valence band flattens progressively, effective mass diverges, and states become confined to regions of maximum curvature—effectively creating an array of self-assembled quantum wells.
+  
+  \item \textbf{Material-specific responses:} Each TMD exhibits unique localization behavior. Sulfides achieve true flat bands with VBM in perfectly dispersionless regions, while selenides operate in a regime of strong but imperfect confinement. The hierarchy of responses (onset compression, DOS enhancement, optimal operating range) provides a tunable palette for device design.
+  
+  \item \textbf{Wavelength trumps amplitude:} Shorter ripples create stronger quantum confinement despite having smaller amplitudes. The $1 \times 10$ structure requires 3-4\% less compression than the $1 \times 20$ structure to achieve the same electronic transition, demonstrating that curvature—scaling as $\kappa \sim A/\lambda^2$—is the master variable controlling localization.
+\end{enumerate}
+
+By mapping the complete phase diagram from delocalized to strongly localized states, we have established mechanical strain as a continuous, reversible, and scalable route to flat-band physics. In the next chapter, we will push these concepts to their extreme: exploring what happens when compression drives the material beyond simple rippling into more complex geometrical phases, unlocking new degrees of freedom for quantum engineering.
+
+\chapter{Conclusion and Outlook}
+
+\section{Introduction}
+
+This dissertation has explored the use of mechanical strain engineering---specifically, periodic ripple formation---as a novel route for creating flat electronic bands in monolayer transition metal dichalcogenides (TMDs). By leveraging the exceptional mechanical flexibility of atomically thin materials, we demonstrated that controlled uniaxial compression can induce periodic strain profiles that profoundly alter the electronic structure. Unlike traditional approaches such as moiré engineering in twisted bilayer systems, strain-induced flat bands offer a dynamically tunable and fabrication-friendly alternative for accessing strongly correlated electronic phases.
+
+The concept of \emph{rippletronics} proposed here provides a versatile, scalable, and experimentally feasible method for flat-band engineering. Instead of relying on twist angles or interlayer stacking, rippletronics utilizes single-layer mechanical deformation, offering a pathway to band flattening that is robust and accessible. This development has significant implications for future 2D material-based devices and quantum systems. Through large-scale atomistic simulations and first-principles calculations, we demonstrated that monolayer TMDs under uniaxial compression undergo a well-defined evolutionary sequence shown in Figure~\ref{fig:ripple_sequence}.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    node distance=1.3cm and 1.2cm,
+    every node/.style={
+        draw,
+        rectangle,
+        rounded corners,
+        minimum height=1.1cm,
+        minimum width=2.9cm,
+        align=center,
+        font=\small,
+        text=black
+    },
+    shorten >=3pt, shorten <=3pt
+    ]
+\node[fill=orange!10!white] (comp) {Compression};
+\node[fill=orange!20!white, right=of comp] (buck) {Buckling\\(Transition)};
+\node[fill=orange!30!white, right=of buck] (ripple) {Ripple\\Formation\\(Curvature)};
+\node[fill=orange!50!white, right=of ripple] (flat) {Band\\Flattening\\(Hole\\Localization)};
+\foreach \i/\j in {comp/buck, buck/ripple, ripple/flat}
+    \draw[->, thick] (\i) -- (\j);
+\end{tikzpicture}
+\caption{Schematic illustrating the progression from uniaxial compression in a monolayer TMD to ripple formation and valence band flattening. The intensifying orange color indicates the growing degree of structural and electronic transformation.}
+\label{fig:ripple_sequence}
+\end{figure}
+
+\section{Summary of Key Findings}
+
+Through systematic investigation combining atomistic simulations and first-principles calculations, this work has revealed the fundamental mechanisms by which mechanical deformation creates flat electronic bands in monolayer TMDs. The key findings are summarized in Table~\ref{tab:key_findings}.
+
+\begin{table}[ht]
+\centering
+\caption{Summary of key findings in rippletronics-based flat-band engineering}
+\label{tab:key_findings}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Category} & \textbf{Key Points} & \textbf{Implications} \\ \midrule
+Flat-band formation & \makecell[l]{Compression induces periodic\\ ripples in monolayer TMDs} & \makecell[l]{Strain fields flatten bands\\ and enhance electron interactions} \\
+Carrier localization & \makecell[l]{Ripple crests/troughs trap holes\\ acting as quantum wells} & \makecell[l]{Supports emergence of\\ strongly correlated states} \\
+Material trends & \makecell[l]{Sulfides achieve true flat bands\\ Selenides show imperfect confinement} & \makecell[l]{Material-specific design rules\\ for targeted applications} \\
+Wavelength effects & \makecell[l]{Shorter ripples produce stronger\\ confinement despite smaller amplitude} & \makecell[l]{Curvature ($\kappa \sim A/\lambda^2$)\\ governs localization} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The structural evolution follows a clear sequence from initial compression through buckling to ripple formation and ultimately electronic reconstruction. Beyond critical compression thresholds of 7--8\%, monolayer TMDs spontaneously form periodic ripple patterns with wavelengths determined by the supercell geometry. The ripple amplitude increases steadily with compression while wavelength contracts, yielding a nonlinear enhancement in curvature that scales as $\kappa \sim A/\lambda^2$. This geometric transformation directly maps onto electronic changes: the valence band undergoes dramatic flattening near the $\Gamma$ point, accompanied by a direct-to-indirect band gap transition and an order-of-magnitude increase in hole effective mass.
+
+\section{Rippletronics vs. Twistronics: A Comparative Perspective}
+
+Both moiré superlattices (twistronics) and rippletronics exploit periodic potentials to engineer flat bands, crucial for exploring strongly correlated electron phenomena. However, these approaches differ fundamentally in their physical mechanisms, experimental requirements, and scalability, as detailed in Table~\ref{tab:compare_methods}.
+
+\begin{table}[ht]
+\centering
+\caption{Comparison between moiré engineering (twistronics) and rippletronics for generating flat bands}
+\label{tab:compare_methods}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Feature} & \textbf{Twistronics} & \textbf{Rippletronics} \\ \midrule
+Mechanism & Interlayer rotation/mismatch & Single-layer compression \\
+Material requirements & Stacked bilayers & Single monolayer \\
+Tunability & Fixed by twist angle & Continuous via strain \\
+Experimental complexity & High (precise alignment) & Moderate (strain control) \\
+Disorder sensitivity & High (twist angle variations) & Low (no stacking faults) \\
+Dynamic control & Static after fabrication & Real-time adjustable \\
+Scalability & Limited by alignment precision & Highly scalable \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The mechanical simplicity of rippletronics provides several practical advantages. While twistronics requires precise angular alignment between layers and remains sensitive to small variations in twist angle, rippletronics operates on a single layer with continuous tunability through mechanical strain. This approach eliminates concerns about interlayer disorder and stacking faults while offering real-time control over electronic properties through strain modulation.
+
+\section{Important Insights and Considerations}
+
+Several crucial aspects emerge from our systematic investigation of ripple-induced flat bands. The selective localization of holes versus electrons reveals fundamental differences in orbital sensitivity to curvature. Hole states, dominated by Mo $d_{z^2}$ and S $p$ orbitals, show exceptional sensitivity to curvature-induced bond angle changes, becoming trapped at ripple extrema. In contrast, conduction band electrons maintain their dispersive character under similar deformation, creating an intrinsic electron-hole asymmetry that could be exploited for device applications.
+
+Regarding experimental feasibility, the critical compressions predicted for flat-band formation (7--15\%) fall within reported mechanical limits for TMD monolayers. Published studies indicate fracture strains of 6--11\% for monolayer MoS\textsubscript{2}, placing our predictions in the experimentally viable range. Multiple pathways exist for achieving the required strain levels, including substrate-induced compression via thermal mismatch, flexible platforms, localized nanoindentation, and pre-patterned substrates.
+
+While GGA functionals underestimate absolute band gaps, the relative trends remain robust. The gap reduction with compression, direct-to-indirect transitions, and valence band flattening patterns are preserved even with more sophisticated theoretical treatments. This consistency ensures that our qualitative predictions about electronic evolution remain reliable despite quantitative uncertainties in absolute energy scales.
+
+\section{Robustness and Practical Considerations}
+
+The robustness of ripple-induced flat bands to external perturbations represents a critical factor for practical applications. Although our calculations were performed without explicit spin-orbit coupling (SOC), the fundamental localization mechanism should remain intact under its inclusion. Previous work on TMDs indicates that SOC primarily splits the valence bands at the K point by 100--400 meV without preventing the strain-driven emergence of $\Gamma$-dominated flat bands. The introduction of SOC would add spin-dependent physics relevant for spintronic applications while preserving the core rippletronics phenomena.
+
+Thermal stability analysis suggests promising prospects for room-temperature operation. The energy scale of strain-induced potential modulation, approximately 100 meV based on our band structure calculations, substantially exceeds thermal energy at room temperature ($k_BT \sim 25$ meV). While thermal fluctuations may broaden the sharp features of localized states, the underlying quantum confinement should persist under ambient conditions, maintaining the essential characteristics needed for device functionality.
+
+\section{Future Directions and Applications}
+
+The demonstration of strain-induced flat bands in monolayer TMDs opens numerous research avenues spanning fundamental physics to practical applications. Immediate opportunities include experimental validation through advanced characterization techniques such as scanning tunneling microscopy, angle-resolved photoemission spectroscopy, and transport measurements. These experiments will be crucial for confirming the predicted electronic structure modifications and establishing the practical limits of the approach.
+
+The curvature-defined quantum wells at ripple extrema suggest applications as arrays of quantum emitters, potentially enabling deterministic single-photon sources without chemical defects. The enhanced density of states and reduced kinetic energy in flat-band regions provide an ideal platform for exploring strongly correlated electron physics, including Mott insulating states, Wigner crystallization, and unconventional superconductivity. The extreme mass anisotropy creates quasi-one-dimensional channels that may exhibit exotic transport phenomena such as Luttinger liquid behavior.
+
+Looking beyond TMDs, this mechanical approach to band engineering could extend to other two-dimensional materials including graphene, black phosphorus, and topological insulators, each offering unique electronic properties for strain modulation. The possibility of combining ripple engineering with moiré physics in multilayer heterostructures presents opportunities for creating hybrid quantum systems with multiple tuning parameters. Real-time strain control through piezoelectric substrates or mechanical actuators could enable dynamic manipulation of electronic properties, leading to a new class of strain-programmable quantum devices.
+
+\section{Broader Implications}
+
+Rippletronics represents a paradigm shift in materials design, elevating mechanical deformation from a perturbation to be minimized to a primary design tool. This approach demonstrates that geometry can directly program quantum mechanical behavior, offering continuous and reversible control over electronic properties. The ability to achieve flat-band physics in single layers without complex stacking or alignment procedures significantly reduces fabrication complexity while maintaining the essential physics needed for quantum applications.
+
+The convergence of mechanical and quantum engineering embodied in this work suggests new possibilities for materials design. By treating strain not as an unwanted effect but as a functional parameter, we expand the design space for quantum materials. This perspective aligns with broader trends in condensed matter physics toward mechanical control of quantum properties, including recent advances in strain-tuned superconductivity and topological phases.
+
+\section{Closing Remarks}
+
+This dissertation has established rippletronics as a powerful paradigm for engineering flat electronic bands through periodic mechanical deformation. By demonstrating that simple uniaxial compression can transform uniform monolayers into programmable quantum landscapes, we have expanded the toolbox for designing strongly correlated electronic systems. The work bridges traditionally separate fields of mechanics and quantum physics, showing how structural engineering at the nanoscale enables direct control over electronic functionality.
+
+The elegance of rippletronics lies in its simplicity: compression creates ripples, ripples create curvature, and curvature reshapes the quantum world. This direct mapping from mechanical input to quantum output offers a level of control and tunability that complements existing approaches while opening new directions for research. As we continue exploring the rich interplay between geometry and quantum mechanics, rippletronics stands as a testament to the power of interdisciplinary thinking in advancing our understanding and control of quantum materials.
+
+
+\chapter*{Glossary of Technical Terms}
+\addcontentsline{toc}{chapter}{Glossary of Technical Terms} % Adds to table of contents
+
+\begin{description}[leftmargin=0.5in,labelsep=0.2in,font=\normalfont\bfseries]
+\item[2D materials / monolayer] Atomically thin crystals consisting of a single layer of atoms. Example: monolayer MoS$_2$ is a 2D material one molecule thick.
+\item[TMD (Transition Metal Dichalcogenide)] A family of layered compounds with formula MX$_2$ (M = transition metal like Mo, W; X = chalcogen like S, Se). They often have a layered structure and can be thinned to monolayers.
+\item[Flat band] An electronic band with very little dispersion (nearly constant energy as a function of momentum). Electrons in a flat band have a very large effective mass and a high density of states.
+\item[Effective mass] A quantity ($m^*$) describing how the acceleration of an electron in a crystal responds to forces, defined by the curvature of the electronic band. A heavy effective mass means the band is flat (electrons behave sluggishly).
+\item[Brillouin zone (BZ)] The fundamental domain of the reciprocal lattice of a periodic crystal. High-symmetry points (like $\Gamma$, $\mathrm{K}$, $M$ in a hexagonal lattice) are points of symmetry in momentum space.
+\item[Valence band maximum (VBM)] The highest energy state of the valence band (highest occupied state at zero temperature in a semiconductor).
+\item[Conduction band minimum (CBM)] The lowest energy state of the conduction band (lowest unoccupied state in a semiconductor).
+\item[Direct/Indirect band gap] A direct gap means the VBM and CBM occur at the same momentum ($\mathbf{k}$) in the BZ, allowing direct optical transitions. Indirect means they occur at different $\mathbf{k}$, requiring a phonon for optical transition.
+\item[Density of states (DOS)] The number of electronic states per interval of energy at each energy level, often expressed as states per eV per unit cell. Peaks in DOS can indicate flat bands or van Hove singularities.
+\item[DFT (Density Functional Theory)] A quantum mechanical computational method used to calculate electronic structure, treating the many-electron problem in a mean-field manner via electron density.
+\item[GGA-PBE] A specific choice of exchange-correlation functional within DFT (Generalized Gradient Approximation by Perdew, Burke, and Ernzerhof) known for reasonable accuracy in solid-state systems.
+\item[Band folding] The mapping of energy bands into a smaller Brillouin zone when using a supercell larger than the primitive cell. States that were at different $\mathbf{k}$ in the primitive cell may appear at the same $\mathbf{k}$ in the supercell BZ.
+\item[Buckling] An out-of-plane deformation of a 2D material under compressive strain, forming a wavy or corrugated shape (a ripple).
+\item[Curvature] In the context of a ripple, the second derivative of the out-of-plane displacement with respect to position. High curvature indicates a sharply bent region.
+\item[Heavy fermion] A quasiparticle in certain intermetallic compounds that behaves as if it has an extremely large effective mass (due to strong electron-electron interactions).
+\item[Lateral heterostructure] A junction of two different regions within the same 2D material with distinct properties (e.g., due to strain or doping).
+\item[Flatness ratio] A metric quantifying the fraction of the Brillouin zone over which the valence band is nearly flat. Indicates the extent of real-space localization.
+\item[Localization] The confinement of electronic wavefunctions in real space, typically due to geometric or potential variations like curvature or strain.
+\item[Rippletronics] An emerging field in 2D materials where periodic mechanical rippling modifies the electronic structure, enabling flat bands and localization effects.
+\item[Twistronics] A field in 2D materials where twisting two stacked layers produces moir\'e superlattices and emergent flat bands due to interlayer interference.
+\end{description}
+
+\chapter*{List of Symbols and Notations}
+\addcontentsline{toc}{chapter}{List of Symbols and Notations} % Adds to table of contents
+
+\begin{longtable}{p{3cm} p{12cm}}
+\toprule
+$E_n(\mathbf{k})$ & Energy of the $n$-th electronic band as a function of wavevector $\mathbf{k}$. \\
+VBM & Valence band maximum (highest occupied band energy in the semiconductor). \\
+CBM & Conduction band minimum (lowest unoccupied band energy). \\
+$\mathrm{K}$, $\Gamma$, $M$ & High-symmetry points in the primitive Brillouin zone of a hexagonal lattice (corner, center, edge-midpoint, respectively). \\
+$a$ & Lattice constant of monolayer MoS$_2$ (approximately 3.16~\AA). \\
+$N$ & Multiple of the primitive cell in the supercell (e.g., $1\times N$ means the supercell is $N$ times longer in one direction than the primitive cell). \\
+$C$ & Compressive strain in percent, defined as $C = -100 (\Delta L/L_0)$, where a positive $C$ denotes compression. \\
+$L_0$ & Initial length of the supercell (uncompressed). \\
+$\Delta L$ & Change in length of the supercell under strain ($L - L_0$). \\
+$\kappa$ & Curvature of the ripple. $\kappa_{\max}$ indicates the maximum curvature (at ripple peaks). Units of curvature are inverse length. \\
+$A$ & Amplitude of the ripple (height from the center plane to a peak). \\
+$\lambda$ & Wavelength of the ripple (distance between equivalent points, such as peak to peak). \\
+$m^*$ & Effective mass of a charge carrier. $m^*_{xx}$, $m^*_{yy}$ denote components along $x$ or $y$ directions. Given in units of the free electron mass $m_0$. \\
+$\hbar$ & Reduced Planck constant ($h/2\pi$), often appearing in quantum expressions like the effective mass formula. \\
+$\mathbf{k}$ & Crystal momentum (wavevector) in reciprocal space. \\
+$E_g$ & Band gap energy (energy difference between CBM and VBM). \\
+PDOS & Projected Density of States (density of states projected onto specific atoms or orbitals). \\
+$W_{\mathrm{flat}}$ & Bandwidth of the flat region in the valence band. Smaller values indicate stronger localization. \\
+$\alpha_{\mathrm{flat}}$ & Flatness ratio---the fraction of the Brillouin zone over which the valence band is nearly flat. \\
+$\mu$ & Carrier mobility (proportional to $1/m^*$ for constant scattering time). \\
+\bottomrule
+\end{longtable}
+
+
+%\include{appendixA}  % 
+
+%\include{appendixB}  % 
+
+
+
+
+% Add bibliography commands
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+\end{document}
